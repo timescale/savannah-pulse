@@ -1,0 +1,20 @@
+<%- include('../partials/header', { title: 'Add Prompt', currentPage: 'prompts' }) %>
+
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <h1>Add Prompt</h1>
+    <a href="/prompts" style="background-color: #666; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; font-weight: bold;">Back to Prompts</a>
+</div>
+
+<form method="POST" action="/prompts/add" style="max-width: 800px;">
+    <div style="margin-bottom: 20px;">
+        <label for="prompt" style="display: block; margin-bottom: 5px; font-weight: bold;">Prompt:</label>
+        <textarea id="prompt" name="prompt" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 16px; min-height: 200px; resize: vertical;" placeholder="Enter your prompt content here..."></textarea>
+    </div>
+
+    <div style="margin-bottom: 20px;">
+        <button type="submit" style="background-color: #04AA6D; color: white; padding: 12px 24px; border: none; border-radius: 4px; font-size: 16px; font-weight: bold; cursor: pointer;">Add Prompt</button>
+        <a href="/prompts" style="margin-left: 10px; padding: 12px 24px; background-color: #f44336; color: white; text-decoration: none; border-radius: 4px; font-weight: bold;">Cancel</a>
+    </div>
+</form>
+
+<%- include('../partials/footer') %>

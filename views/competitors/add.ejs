@@ -1,0 +1,25 @@
+<%- include('../partials/header', { title: 'Add Competitor', currentPage: 'competitors' }) %>
+
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <h1>Add Competitor</h1>
+    <a href="/competitors" style="background-color: #666; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; font-weight: bold;">Back to Competitors</a>
+</div>
+
+<form method="POST" action="/competitors/add" style="max-width: 500px;">
+    <div style="margin-bottom: 20px;">
+        <label for="name" style="display: block; margin-bottom: 5px; font-weight: bold;">Name:</label>
+        <input type="text" id="name" name="name" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 16px;">
+    </div>
+
+    <div style="margin-bottom: 20px;">
+        <label for="url" style="display: block; margin-bottom: 5px; font-weight: bold;">URL:</label>
+        <input type="url" id="url" name="url" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 16px;" placeholder="https://example.com">
+    </div>
+
+    <div style="margin-bottom: 20px;">
+        <button type="submit" style="background-color: #04AA6D; color: white; padding: 12px 24px; border: none; border-radius: 4px; font-size: 16px; font-weight: bold; cursor: pointer;">Add Competitor</button>
+        <a href="/competitors" style="margin-left: 10px; padding: 12px 24px; background-color: #f44336; color: white; text-decoration: none; border-radius: 4px; font-weight: bold;">Cancel</a>
+    </div>
+</form>
+
+<%- include('../partials/footer') %>

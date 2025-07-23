@@ -1,0 +1,40 @@
+<%- include('partials/header', { title: 'Prompts', currentPage: 'prompts' }) %>
+
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <h1>Prompts</h1>
+    <a href="/prompts/add" style="background-color: #04AA6D; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; font-weight: bold;">Add Prompt</a>
+</div>
+
+<table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+    <thead>
+        <tr style="background-color: #f2f2f2;">
+            <th style="border: 1px solid #ddd; padding: 12px; text-align: left;">Prompt</th>
+            <th style="border: 1px solid #ddd; padding: 12px; text-align: left;">Created</th>
+            <th style="border: 1px solid #ddd; padding: 12px; text-align: center; width: 120px;">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        <% if (prompts && prompts.length > 0) { %>
+            <% prompts.forEach(prompt => { %>
+                <tr>
+                    <td style="border: 1px solid #ddd; padding: 12px;"><%= prompt.prompt %></td>
+                    <td style="border: 1px solid #ddd; padding: 12px;">
+                        <%= prompt.created_at ? new Date(prompt.created_at).toLocaleDateString() : 'N/A' %>
+                    </td>
+                    <td style="border: 1px solid #ddd; padding: 12px; text-align: center;">
+                        <a href="/prompts/<%= prompt.id %>/run" style="margin-right: 10px; color: #04AA6D; text-decoration: none; font-size: 18px;" title="Run Prompt">▶️</a>
+                        <a href="/prompts/<%= prompt.id %>/delete" style="color: #f44336; text-decoration: none; font-size: 18px;" title="Delete Prompt" onclick="return confirm('Are you sure you want to delete this prompt?')">🗑️</a>
+                    </td>
+                </tr>
+            <% }); %>
+        <% } else { %>
+            <tr>
+                <td colspan="3" style="border: 1px solid #ddd; padding: 12px; text-align: center; color: #666;">
+                    No prompts found
+                </td>
+            </tr>
+        <% } %>
+    </tbody>
+</table>
+
+<%- include('partials/footer') %>

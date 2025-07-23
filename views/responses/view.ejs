@@ -1,0 +1,53 @@
+<%- include('../partials/header', { title: 'View Response', currentPage: 'responses' }) %>
+
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <h1>Response Details</h1>
+    <a href="/responses" style="background-color: #666; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; font-weight: bold;">Back to Responses</a>
+</div>
+
+<div style="background-color: white; border: 1px solid #ddd; border-radius: 4px; padding: 20px; margin-bottom: 20px;">
+    <h3 style="margin-top: 0; color: #333; border-bottom: 2px solid #04AA6D; padding-bottom: 10px;">Prompt</h3>
+    <div style="background-color: #f9f9f9; padding: 15px; border-radius: 4px; border-left: 4px solid #04AA6D; margin-bottom: 20px;">
+        <p style="margin: 0; line-height: 1.6; word-wrap: break-word;">
+            <%= response.prompt || 'N/A' %>
+        </p>
+    </div>
+
+    <h3 style="color: #333; border-bottom: 2px solid #04AA6D; padding-bottom: 10px;">Response</h3>
+    <div style="background-color: #f9f9f9; padding: 15px; border-radius: 4px; border-left: 4px solid #04AA6D; margin-bottom: 20px;">
+        <pre style="margin: 0; line-height: 1.6; white-space: pre-wrap; word-wrap: break-word; font-family: Arial, sans-serif;"><%- markdown(response.response) %></pre>
+    </div>
+
+    <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 15px; border-top: 1px solid #eee; color: #666; font-size: 14px;">
+        <div>
+            <strong>Provider:</strong> <%= response.provider || 'N/A' %>
+        </div>
+        <div>
+            <strong>Created:</strong> <%= response.created_at ? new Date(response.created_at).toLocaleString() : 'N/A' %>
+        </div>
+    </div>
+</div>
+
+<% if (brandSentiment && brandSentiment.length > 0) { %>
+<div style="background-color: white; border: 1px solid #ddd; border-radius: 4px; padding: 20px; margin-bottom: 20px;">
+    <h3 style="margin-top: 0; color: #333; border-bottom: 2px solid #04AA6D; padding-bottom: 10px;">Brand Sentiment</h3>
+    <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+        <thead>
+            <tr style="background-color: #04AA6D; color: white;">
+                <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Brand</th>
+                <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Sentiment</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% brandSentiment.forEach(({ brand, sentiment }) => { %>
+            <tr style="border-bottom: 1px solid #ddd;">
+                <td style="padding: 12px; border: 1px solid #ddd;"><%= brand %></td>
+                <td style="padding: 12px; border: 1px solid #ddd;"><%= sentiment %></td>
+            </tr>
+            <% }); %>
+        </tbody>
+    </table>
+</div>
+<% } %>
+
+<%- include('../partials/footer') %>

@@ -1,0 +1,50 @@
+<%- include('partials/header', { title: 'Brand Sentiments', currentPage: 'sentiments' }) %>
+
+<h1>Brand Sentiments</h1>
+
+<table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+    <thead>
+        <tr style="background-color: #f2f2f2;">
+            <th style="border: 1px solid #ddd; padding: 12px; text-align: left;">Brand</th>
+            <th style="border: 1px solid #ddd; padding: 12px; text-align: center;">Sentiment Score</th>
+            <th style="border: 1px solid #ddd; padding: 12px; text-align: center;">Sentiment</th>
+        </tr>
+    </thead>
+    <tbody>
+        <% if (sentiments && sentiments.length > 0) { %>
+            <% sentiments.forEach(sentiment => { %>
+                <tr>
+                    <td style="border: 1px solid #ddd; padding: 12px;"><%= sentiment.brand %></td>
+                    <td style="border: 1px solid #ddd; padding: 12px; text-align: center;">
+                        <%= sentiment.sentiment_score %>
+                    </td>
+                    <td style="border: 1px solid #ddd; padding: 12px; text-align: center;">
+                        <% 
+                        let sentimentClass = '';
+                        let sentimentText = '';
+                        if (sentiment.sentiment_score > 0) {
+                            sentimentClass = 'color: #28a745; font-weight: bold;';
+                            sentimentText = 'Positive';
+                        } else if (sentiment.sentiment_score < 0) {
+                            sentimentClass = 'color: #dc3545; font-weight: bold;';
+                            sentimentText = 'Negative';
+                        } else {
+                            sentimentClass = 'color: #6c757d; font-weight: bold;';
+                            sentimentText = 'Neutral';
+                        }
+                        %>
+                        <span style="<%= sentimentClass %>"><%= sentimentText %></span>
+                    </td>
+                </tr>
+            <% }); %>
+        <% } else { %>
+            <tr>
+                <td colspan="3" style="border: 1px solid #ddd; padding: 12px; text-align: center; color: #666;">
+                    No sentiment data found
+                </td>
+            </tr>
+        <% } %>
+    </tbody>
+</table>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,63 @@
+<%- include('partials/header', { title: 'Links', currentPage: 'links' }) %>
+
+<h1>Links</h1>
+
+<h2>Recent Links</h2>
+<table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+    <thead>
+        <tr style="background-color: #f2f2f2;">
+            <th style="border: 1px solid #ddd; padding: 12px; text-align: left;">URL</th>
+            <th style="border: 1px solid #ddd; padding: 12px; text-align: left;">Hostname</th>
+            <th style="border: 1px solid #ddd; padding: 12px; text-align: left;">Response ID</th>
+        </tr>
+    </thead>
+    <tbody>
+        <% if (links && links.length > 0) { %>
+            <% links.forEach(link => { %>
+                <tr>
+                    <td style="border: 1px solid #ddd; padding: 12px;">
+                        <a href="<%= link.url %>" target="_blank" style="color: #04AA6D; text-decoration: none;"><%= link.url %></a>
+                    </td>
+                    <td style="border: 1px solid #ddd; padding: 12px;"><%= link.hostname %></td>
+                    <td style="border: 1px solid #ddd; padding: 12px;">
+                        <a href="/responses/<%= link.response_id %>" style="color: #04AA6D; text-decoration: none;">#<%= link.response_id %></a>
+                    </td>
+                </tr>
+            <% }); %>
+        <% } else { %>
+            <tr>
+                <td colspan="3" style="border: 1px solid #ddd; padding: 12px; text-align: center; color: #666;">
+                    No links found
+                </td>
+            </tr>
+        <% } %>
+    </tbody>
+</table>
+
+<h2 style="margin-top: 40px;">Hostname Counts</h2>
+<table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+    <thead>
+        <tr style="background-color: #f2f2f2;">
+            <th style="border: 1px solid #ddd; padding: 12px; text-align: left;">Hostname</th>
+            <th style="border: 1px solid #ddd; padding: 12px; text-align: left;">Count</th>
+        </tr>
+    </thead>
+    <tbody>
+        <% if (hostnameCounts && hostnameCounts.length > 0) { %>
+            <% hostnameCounts.forEach(count => { %>
+                <tr>
+                    <td style="border: 1px solid #ddd; padding: 12px;"><%= count.hostname %></td>
+                    <td style="border: 1px solid #ddd; padding: 12px;"><%= count.count %></td>
+                </tr>
+            <% }); %>
+        <% } else { %>
+            <tr>
+                <td colspan="2" style="border: 1px solid #ddd; padding: 12px; text-align: center; color: #666;">
+                    No hostname data found
+                </td>
+            </tr>
+        <% } %>
+    </tbody>
+</table>
+
+<%- include('partials/footer') %>

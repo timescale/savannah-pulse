@@ -1,0 +1,33 @@
+import { db, type NewLink } from '../db';
+
+export const getLinks = async () => {
+  return await db.selectFrom('links').selectAll().execute();
+};
+
+export const getRecentLinks = async () => {
+  return await db
+    .selectFrom('links')
+    .innerJoin('responses', 'links.response_id', 'responses.id')
+    .selectAll('links')
+    .select(['responses.id as response_id', 'responses.created_at'])
+    .orderBy('responses.created_at', 'desc')
+    .limit(20)
+    .execute();
+};
+
+export const getHostnameCount = async () => {
+  return await db
+    .selectFrom('links')
+    .select(['hostname', db.fn.count('id').as('count')])
+    .groupBy('hostname')
+    .orderBy('count', 'desc')
+    .execute();
+};
+
+export const insertLink = async (link: NewLink) => {
+  return await db
+    .insertInto('links')
+    .values(link)
+    .returning(['id'])
+    .executeTakeFirst();
+};
