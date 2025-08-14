@@ -32,5 +32,5 @@ export default tseslint.config(
         { ignoreCase: true, ignoreDeclarationSort: true },
       ],
     },
-  }
+  },
 );

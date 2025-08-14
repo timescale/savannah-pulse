@@ -3,8 +3,10 @@
   "version": "1.0.0",
   "description": "See what people are saying out in the wild.",
   "scripts": {
+    "lint": "eslint .",
     "start": "tsx index.ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "typecheck": "tsc --noEmit"
   },
   "repository": {
     "type": "git",
