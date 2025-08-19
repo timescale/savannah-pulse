@@ -1,0 +1,74 @@
+<%- include('../partials/header', { title: 'Generate Prompts', currentPage: 'prompts' }) %>
+
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <h1>Generate Prompts</h1>
+    <a href="/prompts" style="background-color: #666; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; font-weight: bold;">Back to Prompts</a>
+</div>
+
+<div style="margin-bottom: 20px;">
+    <label for="prompt" style="display: block; margin-bottom: 5px; font-weight: bold;">Search base:</label>
+    <textarea id="base" name="base" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 16px; min-height: 200px; resize: vertical;" placeholder="Enter your base here...">
+Searching the TigerData website (https://www.tigerdata.com/), generate a list of prompts that someone might type into ChatGPT searching for technology that is related to what TigerData provides. The prompts should be in the form of "What is ..." or "How would I do ..." type questions. The questions should not directly mention TigerData or Timescale, but rather be like "How would I have time-series data in Postgres".
+    </textarea>
+</div>
+
+<div style="margin-bottom: 20px;">
+    <button id="generate-prompts" class="btn btn-primary">
+        Generate Prompts
+    </button>
+</div>
+
+<div style="margin-top: 20px;">
+    <h2>Generated Prompts</h2>
+    <form id="prompt-form" style="display: none;" method="POST" action="/prompts/add">
+        <div id="prompt-list"></div>
+        <div style="margin-top: 20px;">
+            <button type="submit" class="btn btn-primary">Submit Selected Prompts</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    const button = document.getElementById('generate-prompts');
+    const promptList = document.getElementById('prompt-list');
+    const promptForm = document.getElementById('prompt-form');
+
+    button.addEventListener('click', async () => {
+        button.disabled = true;
+        button.innerHTML = `
+            <div class="spinner-border spinner-border-sm" role="status"></div>
+            <span>Loading...</span>
+        `;
+        try {
+            const base = document.getElementById('base').value;
+            const response = await fetch('/prompts/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ base }),
+            });
+            const data = await response.json();
+            if (data.prompts) {
+                promptList.innerHTML = '';
+                data.prompts.forEach((prompt, index) => {
+                    const div = document.createElement('div');
+                    div.style.marginBottom = '10px';
+                    div.innerHTML = `
+                        <label style="display: flex; align-items: flex-start; cursor: pointer;">
+                            <input type="checkbox" name="prompts" value="${prompt}" checked style="margin-right: 10px; margin-top: 4px;">
+                            <span style="flex: 1;">${prompt}</span>
+                        </label>
+                    `;
+                    promptList.appendChild(div);
+                });
+                promptForm.style.display = 'block';
+            }
+        } finally {
+            button.disabled = false;
+            button.innerHTML = 'Generate Prompts';
+        }
+    });
+</script>
+
+<%- include('../partials/footer') %>

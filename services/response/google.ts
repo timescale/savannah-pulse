@@ -1,4 +1,4 @@
-import { google } from '../llms/google';
+import { google } from '../llms';
 
 import type { Response } from './types';
 

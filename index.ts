@@ -29,8 +29,9 @@ import {
   getResponses,
   insertResponse,
 } from './repositories/responses-repository';
-import { generateBrandSentiment } from './services/brand-sentiment-service';
-import { getResponse, RESPONSE_MODELS } from './services/response-service';
+import { generateBrandSentiment } from './services/brand-sentiment';
+import { generatePrompts } from './services/prompt-generator';
+import { getResponse, RESPONSE_MODELS } from './services/response';
 
 const app = express();
 const port = process.env['PORT'] || 3000;
@@ -96,13 +97,29 @@ app.get('/prompts/add', (req, res) => {
 });
 
 app.post('/prompts/add', async (req, res) => {
-  const { prompt } = req.body;
-  if (!prompt) {
+  const { prompt, prompts } = req.body;
+
+  if (
+    !prompt &&
+    (!prompts || !Array.isArray(prompts) || prompts.length === 0)
+  ) {
     res.status(400).send('Prompt is required');
     return;
   }
-  await insertPrompt({ prompt });
+  const promptArray = prompts ? prompts : [prompt];
+  for (const p of promptArray) {
+    await insertPrompt({ prompt: p });
+  }
   res.redirect('/prompts');
+});
+
+app.get('/prompts/generate', (req, res) => {
+  res.render('prompts/generate');
+});
+
+app.post('/prompts/generate', async (req, res) => {
+  const prompts = await generatePrompts(req.body.base);
+  res.json({ prompts });
 });
 
 app.get('/prompts/:id/run', async (req, res) => {
@@ -127,8 +144,6 @@ app.get('/prompts/:id/run', async (req, res) => {
     res.status(400).send('Invalid model');
     return;
   }
-
-  console.log(responseModels);
 
   const promises = responseModels.map(async (model) => {
     const response = await getResponse(prompt.prompt, model);

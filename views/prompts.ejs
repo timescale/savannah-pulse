@@ -2,7 +2,10 @@
 
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
     <h1>Prompts</h1>
-    <a href="/prompts/add" style="background-color: #04AA6D; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; font-weight: bold;">Add Prompt</a>
+    <div style="display: flex; gap: 10px;">
+        <a class="btn btn-primary" href="/prompts/add">Add Prompt</a>
+        <a class="btn btn-primary" href="/prompts/generate">Generate Prompts</a>
+    </div>
 </div>
 
 <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
@@ -23,8 +26,8 @@
                     </td>
                     <td style="border: 1px solid #ddd; padding: 12px; text-align: center;">
                         <div class="btn-group" role="group">
-                            <a href="/prompts/<%= prompt.id %>/run" class="btn btn-success btn-sm">Run All</a>
-                            <button class="btn btn-success btn-sm dropdown-toggle dropdown-toggle-split" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <a href="/prompts/<%= prompt.id %>/run" class="btn btn-primary btn-sm">Run All</a>
+                            <button class="btn btn-primary btn-sm dropdown-toggle dropdown-toggle-split" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 <span class="visually-hidden">Toggle Dropdown</span>
                             </button>
                             <ul class="dropdown-menu">

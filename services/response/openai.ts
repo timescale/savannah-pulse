@@ -1,5 +1,6 @@
 import { openai } from '../llms';
-import type { Response } from '../response-service/types';
+
+import type { Response } from './types';
 
 export const getResponse = async (
   model: string,
