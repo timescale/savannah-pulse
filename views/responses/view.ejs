@@ -20,13 +20,35 @@
 
     <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 15px; border-top: 1px solid #eee; color: #666; font-size: 14px;">
         <div>
-            <strong>Provider:</strong> <%= response.provider || 'N/A' %>
+            <strong>Model:</strong> <%= response.model || 'N/A' %>
         </div>
         <div>
             <strong>Created:</strong> <%= response.created_at ? new Date(response.created_at).toLocaleString() : 'N/A' %>
         </div>
     </div>
 </div>
+
+<% if (links && links.length > 0) { %>
+<div style="background-color: white; border: 1px solid #ddd; border-radius: 4px; padding: 20px; margin-bottom: 20px;">
+    <h3 style="margin-top: 0; color: #333; border-bottom: 2px solid #04AA6D; padding-bottom: 10px;">Links</h3>
+    <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+        <thead>
+            <tr style="background-color: #04AA6D; color: white;">
+                <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Hostname</th>
+                <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">URL</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% links.forEach(({ hostname, url }) => { %>
+            <tr style="border-bottom: 1px solid #ddd;">
+                <td style="padding: 12px; border: 1px solid #ddd;"><%= hostname %></td>
+                <td style="padding: 12px; border: 1px solid #ddd; word-break: break-all;"><a href="<%= url %>" target="_blank" style="color: #04AA6D; text-decoration: none;"><%= url %></a></td>
+            </tr>
+            <% }); %>
+        </tbody>
+    </table>
+</div>
+<% } %>
 
 <% if (brandSentiment && brandSentiment.length > 0) { %>
 <div style="background-color: white; border: 1px solid #ddd; border-radius: 4px; padding: 20px; margin-bottom: 20px;">

@@ -29,18 +29,22 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-prettier": "^5.5.3",
-    "kysely": "^0.28.3",
-    "openai": "^5.10.2",
     "prettier": "^3.6.2",
     "tsx": "^4.20.3",
     "typescript": "^5.8.3",
-    "typescript-eslint": "^8.38.0",
-    "zod": "^3.25.76"
+    "typescript-eslint": "^8.38.0"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.60.0",
+    "@google/genai": "^1.14.0",
+    "bootstrap": "^5.3.3",
+    "bootstrap-icons": "^1.13.1",
     "dotenv": "^17.2.0",
     "express": "^5.1.0",
+    "kysely": "^0.28.3",
     "marked": "^16.1.1",
-    "pg": "^8.16.3"
+    "openai": "^5.10.2",
+    "pg": "^8.16.3",
+    "zod": "^3.25.76"
   }
 }

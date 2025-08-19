@@ -7,6 +7,7 @@
         <tr style="background-color: #f2f2f2;">
             <th style="border: 1px solid #ddd; padding: 12px; text-align: left;">Prompt</th>
             <th style="border: 1px solid #ddd; padding: 12px; text-align: left;">Response</th>
+            <th style="border: 1px solid #ddd; padding: 12px; text-align: center; width: 80px;">Model</th>
             <th style="border: 1px solid #ddd; padding: 12px; text-align: left;">Created</th>
             <th style="border: 1px solid #ddd; padding: 12px; text-align: center; width: 80px;">Actions</th>
         </tr>
@@ -25,6 +26,15 @@
                             <%= response.response || 'N/A' %>
                         <% } %>
                     </td>
+                    <td style="border: 1px solid #ddd; padding: 12px; text-align: center;">
+
+                        <% const modelParts = response.model.split(':'); %>
+                        <i
+                            class="bi bi-<%= modelParts[0] %>"
+                            style="cursor: help;"
+                            title="<%= response.model %>"
+                        ></i>
+                    </td>
                     <td style="border: 1px solid #ddd; padding: 12px;">
                         <%= response.created_at ? new Date(response.created_at).toISOString() : 'N/A' %>
                     </td>
@@ -35,7 +45,7 @@
             <% }); %>
         <% } else { %>
             <tr>
-                <td colspan="4" style="border: 1px solid #ddd; padding: 12px; text-align: center; color: #666;">
+                <td colspan="5" style="border: 1px solid #ddd; padding: 12px; text-align: center; color: #666;">
                     No responses found
                 </td>
             </tr>

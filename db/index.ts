@@ -17,13 +17,16 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const poolConfig: PoolConfig = {
-  database: 'postgres',
-  host: 'localhost',
-  user: 'postgres',
-  password: 'password',
-  port: 5432,
+  database: process.env['PGDATABASE'],
+  host: process.env['PGHOST'],
+  user: process.env['PGUSER'],
+  password: process.env['PGPASSWORD'],
   max: 10,
 };
+
+if (process.env['PGPORT']) {
+  poolConfig.port = parseInt(process.env['PGPORT'], 10);
+}
 
 export const db = new Kysely<Database>({
   dialect: new PostgresDialect({

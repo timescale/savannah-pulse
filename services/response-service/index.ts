@@ -1,14 +1,29 @@
-import { getResponse as chatGptResponse } from './chatgpt';
+import { getResponse as anthropicResponse } from './anthropic';
+import { getResponse as googleResponse } from './google';
+import { getResponse as openAiResponse } from './openai';
 import type { Response } from './types';
+
+export const RESPONSE_MODELS = [
+  'anthropic:claude-3-5-haiku-latest',
+  'google:gemini-2.5-flash',
+  'openai:gpt-4o-mini-search-preview',
+];
 
 export const getResponse = async (
   prompt: string,
-  model: 'gpt-4o-search-preview' | 'gpt-4o-mini-search-preview',
+  model: string,
 ): Promise<Response> => {
-  switch (model) {
-    case 'gpt-4o-search-preview':
-    case 'gpt-4o-mini-search-preview':
-      return chatGptResponse(prompt, model);
+  const [provider, modelName] = model.split(':');
+  if (!provider || !modelName) {
+    throw new Error(`Invalid model format: ${model}`);
+  }
+  switch (provider) {
+    case 'anthropic':
+      return anthropicResponse(modelName, prompt);
+    case 'google':
+      return googleResponse(modelName, prompt);
+    case 'openai':
+      return openAiResponse(modelName, prompt);
     default:
       throw new Error(`Unsupported model: ${model}`);
   }

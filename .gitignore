@@ -1,2 +1,5 @@
 node_modules/
+# experiment files
+/*test.ts
+.DS_Store
 .env

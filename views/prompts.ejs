@@ -10,7 +10,7 @@
         <tr style="background-color: #f2f2f2;">
             <th style="border: 1px solid #ddd; padding: 12px; text-align: left;">Prompt</th>
             <th style="border: 1px solid #ddd; padding: 12px; text-align: left;">Created</th>
-            <th style="border: 1px solid #ddd; padding: 12px; text-align: center; width: 120px;">Actions</th>
+            <th style="border: 1px solid #ddd; padding: 12px; text-align: center; width: 200px;">Actions</th>
         </tr>
     </thead>
     <tbody>
@@ -22,8 +22,23 @@
                         <%= prompt.created_at ? new Date(prompt.created_at).toLocaleDateString() : 'N/A' %>
                     </td>
                     <td style="border: 1px solid #ddd; padding: 12px; text-align: center;">
-                        <a href="/prompts/<%= prompt.id %>/run" style="margin-right: 10px; color: #04AA6D; text-decoration: none; font-size: 18px;" title="Run Prompt">▶️</a>
-                        <a href="/prompts/<%= prompt.id %>/delete" style="color: #f44336; text-decoration: none; font-size: 18px;" title="Delete Prompt" onclick="return confirm('Are you sure you want to delete this prompt?')">🗑️</a>
+                        <div class="btn-group" role="group">
+                            <a href="/prompts/<%= prompt.id %>/run" class="btn btn-success btn-sm">Run All</a>
+                            <button class="btn btn-success btn-sm dropdown-toggle dropdown-toggle-split" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <span class="visually-hidden">Toggle Dropdown</span>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <% for (const model of models) { %>
+                                    <% const modelParts = model.split(':'); %>
+                                    <li>
+                                        <a class="dropdown-item" href="/prompts/<%= prompt.id %>/run?model=<%= model %>">
+                                            <i class="bi bi-<%= modelParts[0] %>"></i> <%= model %>
+                                        </a>
+                                    </li>
+                                <% } %>
+                            </ul>
+                        </div>
+                        <a href="/prompts/<%= prompt.id %>/delete" class="btn btn-danger btn-sm ms-2" onclick="return confirm('Are you sure you want to delete this prompt?')">Delete</a>
                     </td>
                 </tr>
             <% }); %>

@@ -1,7 +1,7 @@
 import { zodResponseFormat } from 'openai/helpers/zod';
 import { z } from 'zod';
 
-import { openai } from '../providers';
+import { openai } from './llms';
 
 const BrandSentiment = z.object({
   sentiments: z.array(

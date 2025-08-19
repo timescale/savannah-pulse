@@ -19,7 +19,7 @@ export type PromptUpdate = Updateable<PromptTable>;
 export interface ResponseTable {
   id: Generated<number>;
   prompt_id: number;
-  provider: string;
+  model: string;
   response: string;
   created_at: ColumnType<Date, never, never>;
 }

@@ -1,10 +1,9 @@
-import { openai } from '../../providers';
-
-import type { Response } from './types';
+import { openai } from '../llms';
+import type { Response } from '../response-service/types';
 
 export const getResponse = async (
-  prompt: string,
   model: string,
+  prompt: string,
 ): Promise<Response> => {
   const response = await openai.chat.completions.create({
     model,

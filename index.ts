@@ -1,4 +1,4 @@
-import dotenv from 'dotenv';
+import 'dotenv/config';
 import express from 'express';
 import { marked } from 'marked';
 import path from 'node:path';
@@ -14,6 +14,7 @@ import {
 } from './repositories/competitors-repository';
 import {
   getHostnameCount,
+  getLinksByResponseId,
   getRecentLinks,
   insertLink,
 } from './repositories/links-repository';
@@ -29,9 +30,7 @@ import {
   insertResponse,
 } from './repositories/responses-repository';
 import { generateBrandSentiment } from './services/brand-sentiment-service';
-import { getResponse } from './services/response-service';
-
-dotenv.config();
+import { getResponse, RESPONSE_MODELS } from './services/response-service';
 
 const app = express();
 const port = process.env['PORT'] || 3000;
@@ -41,11 +40,28 @@ app.set('views', path.join(__dirname, 'views'));
 
 // Make markdown renderer available in all EJS templates
 app.locals['markdown'] = (text: string) => {
-  return marked(text);
+  return marked(text, { async: false, gfm: true });
 };
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Serve Bootstrap CSS and JS from node_modules
+app.use(
+  '/bootstrap/css',
+  express.static(path.join(__dirname, 'node_modules/bootstrap/dist/css')),
+);
+app.use(
+  '/bootstrap/js',
+  express.static(path.join(__dirname, 'node_modules/bootstrap/dist/js')),
+);
+app.use(
+  '/bootstrap/icons',
+  express.static(path.join(__dirname, 'node_modules/bootstrap-icons/font')),
+);
+
+// Serve static files from public directory
+app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/', (req, res) => {
   res.render('index');
@@ -72,7 +88,7 @@ app.post('/competitors/add', async (req, res) => {
 
 app.get('/prompts', async (req, res) => {
   const prompts = await getPrompts();
-  res.render('prompts', { prompts });
+  res.render('prompts', { models: RESPONSE_MODELS, prompts });
 });
 
 app.get('/prompts/add', (req, res) => {
@@ -100,34 +116,71 @@ app.get('/prompts/:id/run', async (req, res) => {
     res.status(404).send('Prompt not found');
     return;
   }
-  const response = await getResponse(
-    prompt.prompt,
-    'gpt-4o-mini-search-preview',
-  );
-  const brandSentiment = await generateBrandSentiment(
-    [...(await getCompetitors()).map((c) => c.name), 'Timescale', 'TigerData'],
-    response.content,
-  );
-  const newResponse = await insertResponse({
-    prompt_id: promptId,
-    provider: 'chatgpt',
-    response: response.content,
-  });
-  if (!newResponse) {
-    res.status(500).send('Failed to insert response');
+
+  const responseModels =
+    typeof req.query['model'] === 'string' &&
+    RESPONSE_MODELS.includes(req.query['model'])
+      ? [req.query['model']]
+      : RESPONSE_MODELS;
+
+  if (responseModels.length === 0) {
+    res.status(400).send('Invalid model');
     return;
   }
-  const id = newResponse.id;
-  for (const url of response.urls) {
-    await insertLink({ response_id: id, url, hostname: new URL(url).hostname });
-  }
-  for (const sentiment of brandSentiment.sentiments) {
-    await insertBrandSentiment({
-      ...sentiment,
-      response_id: id,
+
+  console.log(responseModels);
+
+  const promises = responseModels.map(async (model) => {
+    const response = await getResponse(prompt.prompt, model);
+    const brandSentiment = await generateBrandSentiment(
+      [
+        ...(await getCompetitors()).map((c) => c.name),
+        'Timescale',
+        'TigerData',
+      ],
+      response.content,
+    );
+    const newResponse = await insertResponse({
+      prompt_id: promptId,
+      model,
+      response: response.content,
     });
+    if (!newResponse) {
+      throw new Error('Could not insert response');
+    }
+    const id = newResponse.id;
+    for (const url of response.urls) {
+      await insertLink({
+        response_id: id,
+        url,
+        hostname: new URL(url).hostname.replace(/^www\./, ''),
+      });
+    }
+    for (const sentiment of brandSentiment.sentiments) {
+      await insertBrandSentiment({
+        ...sentiment,
+        response_id: id,
+      });
+    }
+
+    return id;
+  });
+
+  const results = await Promise.allSettled(promises);
+
+  if (results.length === 1) {
+    const result = results[0];
+    if (result?.status === 'fulfilled') {
+      res.redirect(`/responses/${result.value}`);
+    } else {
+      res
+        .status(500)
+        .send('Error processing response:<br /><br />' + result?.reason);
+    }
+    return;
   }
-  res.redirect(`/responses/${id}`);
+
+  res.redirect('/responses');
 });
 
 app.get('/prompts/:id/delete', async (req, res) => {
@@ -157,8 +210,8 @@ app.get('/responses/:id', async (req, res) => {
     return;
   }
   const brandSentiment = await getBrandSentimentByResponseId(responseId);
-  console.log(brandSentiment);
-  res.render('responses/view', { brandSentiment, response });
+  const links = await getLinksByResponseId(responseId);
+  res.render('responses/view', { brandSentiment, links, response });
 });
 
 app.get('/links', async (req, res) => {

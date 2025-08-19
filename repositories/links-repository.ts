@@ -24,6 +24,15 @@ export const getHostnameCount = async () => {
     .execute();
 };
 
+export const getLinksByResponseId = async (responseId: number) => {
+  return await db
+    .selectFrom('links')
+    .selectAll()
+    .where('response_id', '=', responseId)
+    .orderBy('hostname', 'asc')
+    .execute();
+};
+
 export const insertLink = async (link: NewLink) => {
   return await db
     .insertInto('links')
