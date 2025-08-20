@@ -7,9 +7,7 @@
 
 <div style="margin-bottom: 20px;">
     <label for="prompt" style="display: block; margin-bottom: 5px; font-weight: bold;">Search base:</label>
-    <textarea id="base" name="base" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 16px; min-height: 200px; resize: vertical;" placeholder="Enter your base here...">
-Searching the TigerData website (https://www.tigerdata.com/), generate a list of prompts that someone might type into ChatGPT searching for technology that is related to what TigerData provides. The prompts should be in the form of "What is ..." or "How would I do ..." type questions. The questions should not directly mention TigerData or Timescale, but rather be like "How would I have time-series data in Postgres".
-    </textarea>
+    <textarea id="base" name="base" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 16px; min-height: 200px; resize: vertical;" placeholder="Enter your base here..."><%= promptText %></textarea>
 </div>
 
 <div style="margin-bottom: 20px;">

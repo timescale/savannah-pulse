@@ -113,8 +113,21 @@ app.post('/prompts/add', async (req, res) => {
   res.redirect('/prompts');
 });
 
-app.get('/prompts/generate', (req, res) => {
-  res.render('prompts/generate');
+app.get('/prompts/generate', async (req, res) => {
+  let promptText = `Searching the TigerData website (https://www.tigerdata.com/), generate a list of prompts that someone might type into ChatGPT searching for technology that is related to what TigerData provides. The prompts should be in the form of "What is ..." or "How would I do ..." type questions. The questions should not directly mention TigerData or Timescale, but rather be like "How would I have time-series data in Postgres".`;
+  if (req.query['promptId']) {
+    const promptId = parseInt((req.query['promptId'] as string) || '0', 10);
+    const prompt = await getPromptById(promptId);
+    if (prompt) {
+      promptText = `Given the following prompt:
+
+${prompt.prompt}
+
+Generate a list of related search prompts a user might type into ChatGPT or Perplexity. Feel free to expand on the base idea of the prompt.`;
+    }
+  }
+
+  res.render('prompts/generate', { promptText });
 });
 
 app.post('/prompts/generate', async (req, res) => {
