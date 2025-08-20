@@ -1,12 +1,14 @@
 import { getResponse as anthropicResponse } from './anthropic';
 import { getResponse as googleResponse } from './google';
 import { getResponse as openAiResponse } from './openai';
+import { getResponse as perplexityResponse } from './perplexity';
 import type { Response } from './types';
 
 export const RESPONSE_MODELS = [
   'anthropic:claude-3-5-haiku-latest',
   'google:gemini-2.5-flash',
   'openai:gpt-4o-mini-search-preview',
+  'perplexity:sonar',
 ];
 
 export const getResponse = async (
@@ -24,6 +26,8 @@ export const getResponse = async (
       return googleResponse(modelName, prompt);
     case 'openai':
       return openAiResponse(modelName, prompt);
+    case 'perplexity':
+      return perplexityResponse(modelName, prompt);
     default:
       throw new Error(`Unsupported model: ${model}`);
   }
