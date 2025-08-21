@@ -9,6 +9,7 @@ import type {
 export interface PromptTable {
   id: Generated<number>;
   prompt: string;
+  models: string[];
   created_at: ColumnType<Date, never, never>;
   updated_at: ColumnType<Date, never, Date>;
 }

@@ -31,7 +31,11 @@ import {
 } from './repositories/responses-repository';
 import { generateBrandSentiment } from './services/brand-sentiment';
 import { generatePrompts } from './services/prompt-generator';
-import { getResponse, RESPONSE_MODELS } from './services/response';
+import {
+  DEFAULT_RESPONSE_MODELS,
+  getResponse,
+  SUPPORTED_RESPONSE_MODELS,
+} from './services/response';
 
 const app = express();
 const port = process.env['PORT'] || 3000;
@@ -64,16 +68,16 @@ app.use(
 // Serve static files from public directory
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.get('/', (req, res) => {
+app.get('/', (_, res) => {
   res.render('index');
 });
 
-app.get('/competitors', async (req, res) => {
+app.get('/competitors', async (_, res) => {
   const competitors = await getCompetitors();
   res.render('competitors', { competitors });
 });
 
-app.get('/competitors/add', (req, res) => {
+app.get('/competitors/add', (_, res) => {
   res.render('competitors/add');
 });
 
@@ -87,17 +91,40 @@ app.post('/competitors/add', async (req, res) => {
   res.redirect('/competitors');
 });
 
-app.get('/prompts', async (req, res) => {
+app.get('/prompts', async (_, res) => {
   const prompts = await getPrompts();
-  res.render('prompts', { models: RESPONSE_MODELS, prompts });
+  res.render('prompts', { prompts });
 });
 
-app.get('/prompts/add', (req, res) => {
-  res.render('prompts/add');
+app.get('/prompts/add', (_, res) => {
+  res.render('prompts/add', {
+    defaultModels: DEFAULT_RESPONSE_MODELS,
+    supportedModels: SUPPORTED_RESPONSE_MODELS.reduce(
+      (acc, model) => {
+        const parts = model.split(':');
+        const provider = parts[0] as string;
+        acc[provider] = acc[provider] || [];
+        acc[provider].push(parts[1] as string);
+        return acc;
+      },
+      {} as { [provider: string]: string[] },
+    ),
+  });
 });
 
 app.post('/prompts/add', async (req, res) => {
-  const { prompt, prompts } = req.body;
+  const { models, prompt, prompts } = req.body;
+
+  if (!models || !Array.isArray(models) || models.length === 0) {
+    res.status(400).send('At least one model is required');
+    return;
+  }
+  for (const model of models) {
+    if (!SUPPORTED_RESPONSE_MODELS.includes(model)) {
+      res.status(400).send(`Unsupported model: ${model}`);
+      return;
+    }
+  }
 
   if (
     !prompt &&
@@ -108,7 +135,7 @@ app.post('/prompts/add', async (req, res) => {
   }
   const promptArray = prompts ? prompts : [prompt];
   for (const p of promptArray) {
-    await insertPrompt({ prompt: p });
+    await insertPrompt({ models, prompt: p });
   }
   res.redirect('/prompts');
 });
@@ -149,9 +176,9 @@ app.get('/prompts/:id/run', async (req, res) => {
 
   const responseModels =
     typeof req.query['model'] === 'string' &&
-    RESPONSE_MODELS.includes(req.query['model'])
+    prompt.models.includes(req.query['model'])
       ? [req.query['model']]
-      : RESPONSE_MODELS;
+      : prompt.models;
 
   if (responseModels.length === 0) {
     res.status(400).send('Invalid model');
@@ -221,7 +248,7 @@ app.get('/prompts/:id/delete', async (req, res) => {
   res.redirect('/prompts');
 });
 
-app.get('/responses', async (req, res) => {
+app.get('/responses', async (_, res) => {
   const responses = await getResponses();
   res.render('responses', { responses });
 });
@@ -242,14 +269,14 @@ app.get('/responses/:id', async (req, res) => {
   res.render('responses/view', { brandSentiment, links, response });
 });
 
-app.get('/links', async (req, res) => {
+app.get('/links', async (_, res) => {
   const links = await getRecentLinks();
   const hostnameCounts = await getHostnameCount();
 
   res.render('links', { links, hostnameCounts });
 });
 
-app.get('/sentiments', async (req, res) => {
+app.get('/sentiments', async (_, res) => {
   const sentiments = await getBrandSentiment();
   res.render('sentiments', { sentiments });
 });
