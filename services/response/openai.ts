@@ -6,25 +6,33 @@ export const getResponse = async (
   model: string,
   prompt: string,
 ): Promise<Response> => {
-  const response = await openai.chat.completions.create({
+  const response = await openai.responses.create({
     model,
-    messages: [
-      {
-        role: 'user',
-        content: prompt,
-      },
-    ],
-    web_search_options: {},
+    tools: [{ type: 'web_search_preview' }],
+    input: prompt,
   });
 
-  if (!response.choices[0]?.message.content) {
-    throw new Error('No response content found');
-  }
-
   return {
-    content: response.choices[0].message.content,
-    urls: (response.choices[0].message.annotations || []).map(
-      (annotation) => annotation.url_citation.url,
-    ),
+    content: response.output_text,
+    urls: response.output.reduce((acc, output) => {
+      if (output.type === 'message') {
+        acc.push(
+          ...output.content.reduce((innerAcc, content) => {
+            if (content.type === 'output_text') {
+              innerAcc.push(
+                ...content.annotations.reduce((urlAcc, annotation) => {
+                  if (annotation.type === 'url_citation') {
+                    urlAcc.push(annotation.url);
+                  }
+                  return urlAcc;
+                }, [] as string[]),
+              );
+            }
+            return innerAcc;
+          }, [] as string[]),
+        );
+      }
+      return acc;
+    }, [] as string[]),
   };
 };

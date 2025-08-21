@@ -7,7 +7,7 @@ import type { Response } from './types';
 export const RESPONSE_MODELS = [
   'anthropic:claude-3-5-haiku-latest',
   'google:gemini-2.5-flash',
-  'openai:gpt-4o-mini-search-preview',
+  'openai:gpt-5-nano',
   'perplexity:sonar',
 ];
 
