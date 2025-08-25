@@ -10,6 +10,17 @@ export const getResponses = async () => {
     .execute();
 };
 
+export const getResponsesByProvider = async (provider: string) => {
+  return await db
+    .selectFrom('responses')
+    .innerJoin('prompts', 'responses.prompt_id', 'prompts.id')
+    .selectAll('responses')
+    .select(['prompts.id as prompt_id', 'prompts.prompt as prompt'])
+    .where('responses.model', 'like', `${provider}%`)
+    .orderBy('responses.created_at', 'desc')
+    .execute();
+};
+
 export const getResponseById = async (id: number) => {
   return await db
     .selectFrom('responses')

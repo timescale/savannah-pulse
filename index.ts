@@ -27,6 +27,7 @@ import {
 import {
   getResponseById,
   getResponses,
+  getResponsesByProvider,
   insertResponse,
 } from './repositories/responses-repository';
 import { generateBrandSentiment } from './services/brand-sentiment';
@@ -248,8 +249,13 @@ app.get('/prompts/:id/delete', async (req, res) => {
   res.redirect('/prompts');
 });
 
-app.get('/responses', async (_, res) => {
-  const responses = await getResponses();
+app.get('/responses', async (req, res) => {
+  let responses: Awaited<ReturnType<typeof getResponses>>;
+  if (req.query['provider']) {
+    responses = await getResponsesByProvider(req.query['provider'] as string);
+  } else {
+    responses = await getResponses();
+  }
   res.render('responses', { responses });
 });
 
