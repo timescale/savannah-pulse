@@ -1,6 +1,6 @@
 # Savannah Pulse
 
-See what people are saying out in the wild about TigerData and Timescale.
+See what LLMs are saying out in the wild about TigerData and Timescale.
 
 ## Getting Started
 
