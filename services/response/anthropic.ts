@@ -28,9 +28,14 @@ export const getResponse = async (
   });
 
   let responseText = '';
+  const searchQueries: string[] = [];
   const urls: string[] = [];
 
   for (const content of response.content) {
+    if (content.type === 'server_tool_use' && content.name === 'web_search') {
+      searchQueries.push((content.input as { query: string }).query);
+    }
+
     if (content.type !== 'text') {
       continue;
     }
@@ -44,6 +49,7 @@ export const getResponse = async (
 
   return {
     content: responseText,
-    urls,
+    searchQueries,
+    urls: [...new Set(urls)],
   };
 };

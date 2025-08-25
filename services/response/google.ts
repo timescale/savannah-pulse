@@ -40,6 +40,8 @@ export const getResponse = async (
 
   return {
     content: response.text || '',
-    urls,
+    searchQueries:
+      response.candidates?.[0]?.groundingMetadata?.webSearchQueries || [],
+    urls: [...new Set(urls)],
   };
 };

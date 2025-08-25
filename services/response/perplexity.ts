@@ -16,8 +16,11 @@ export const getResponse = async (
     ],
   });
 
+  const urls = response.search_results.map((result) => result.url);
+
   return {
     content: response.choices[0].message.content,
-    urls: response.search_results.map((result) => result.url),
+    searchQueries: [],
+    urls: [...new Set(urls)],
   };
 };

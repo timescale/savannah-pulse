@@ -28,6 +28,21 @@
     </div>
 </div>
 
+<% if (searchQueries && searchQueries.length > 0) { %>
+<div style="background-color: white; border: 1px solid #ddd; border-radius: 4px; padding: 20px; margin-bottom: 20px;">
+    <h3 style="margin-top: 0; color: #333; border-bottom: 2px solid #04AA6D; padding-bottom: 10px;">Search Queries</h3>
+    <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+        <tbody>
+            <% searchQueries.forEach(({ query }) => { %>
+            <tr style="border-bottom: 1px solid #ddd;">
+                <td style="padding: 12px; border: 1px solid #ddd;"><%= query %></td>
+            </tr>
+            <% }); %>
+        </tbody>
+    </table>
+</div>
+<% } %>
+
 <% if (links && links.length > 0) { %>
 <div style="background-color: white; border: 1px solid #ddd; border-radius: 4px; padding: 20px; margin-bottom: 20px;">
     <h3 style="margin-top: 0; color: #333; border-bottom: 2px solid #04AA6D; padding-bottom: 10px;">Links</h3>

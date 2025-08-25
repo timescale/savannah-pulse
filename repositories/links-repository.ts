@@ -1,4 +1,6 @@
-import { db, type NewLink } from '../db';
+import type { Transaction } from 'kysely';
+
+import { type Database, db, type NewLink } from '../db';
 
 export const getLinks = async () => {
   return await db.selectFrom('links').selectAll().execute();
@@ -33,8 +35,11 @@ export const getLinksByResponseId = async (responseId: number) => {
     .execute();
 };
 
-export const insertLink = async (link: NewLink) => {
-  return await db
+export const insertLink = async (
+  link: NewLink,
+  trx?: Transaction<Database>,
+) => {
+  return await (trx || db)
     .insertInto('links')
     .values(link)
     .returning(['id'])

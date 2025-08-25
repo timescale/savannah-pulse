@@ -3,6 +3,7 @@ import express from 'express';
 import { marked } from 'marked';
 import path from 'node:path';
 
+import { db } from './db';
 import {
   getBrandSentiment,
   getBrandSentimentByResponseId,
@@ -30,6 +31,10 @@ import {
   getResponsesByProvider,
   insertResponse,
 } from './repositories/responses-repository';
+import {
+  getSearchQueriesByResponseId,
+  insertSearchQuery,
+} from './repositories/search-queries-repository';
 import { generateBrandSentiment } from './services/brand-sentiment';
 import { generatePrompts } from './services/prompt-generator';
 import {
@@ -186,53 +191,60 @@ app.get('/prompts/:id/run', async (req, res) => {
     return;
   }
 
-  const promises = responseModels.map(async (model) => {
-    const response = await getResponse(prompt.prompt, model);
-    const brandSentiment = await generateBrandSentiment(
-      [
-        ...(await getCompetitors()).map((c) => c.name),
-        'Timescale',
-        'TigerData',
-      ],
-      response.content,
-    );
-    const newResponse = await insertResponse({
-      prompt_id: promptId,
-      model,
-      response: response.content,
-    });
-    if (!newResponse) {
-      throw new Error('Could not insert response');
-    }
-    const id = newResponse.id;
-    for (const url of response.urls) {
-      await insertLink({
-        response_id: id,
-        url,
-        hostname: new URL(url).hostname.replace(/^www\./, ''),
-      });
-    }
-    for (const sentiment of brandSentiment.sentiments) {
-      await insertBrandSentiment({
-        ...sentiment,
-        response_id: id,
-      });
-    }
+  const results = await db.transaction().execute(async (trx) => {
+    const promises = responseModels.map(async (model) => {
+      const response = await getResponse(prompt.prompt, model);
+      const brandSentiment = await generateBrandSentiment(
+        [
+          ...(await getCompetitors()).map((c) => c.name),
+          'Timescale',
+          'TigerData',
+        ],
+        response.content,
+      );
+      const newResponse = await insertResponse(
+        {
+          prompt_id: promptId,
+          model,
+          response: response.content,
+        },
+        trx,
+      );
+      if (!newResponse) {
+        throw new Error('Could not insert response');
+      }
+      const id = newResponse.id;
+      for (const url of response.urls) {
+        await insertLink(
+          {
+            response_id: id,
+            url,
+            hostname: new URL(url).hostname.replace(/^www\./, ''),
+          },
+          trx,
+        );
+      }
+      for (const searchQuery of response.searchQueries) {
+        await insertSearchQuery({ query: searchQuery, response_id: id }, trx);
+      }
+      for (const sentiment of brandSentiment.sentiments) {
+        await insertBrandSentiment(
+          {
+            ...sentiment,
+            response_id: id,
+          },
+          trx,
+        );
+      }
 
-    return id;
+      return id;
+    });
+
+    return await Promise.all(promises);
   });
 
-  const results = await Promise.allSettled(promises);
-
   if (results.length === 1) {
-    const result = results[0];
-    if (result?.status === 'fulfilled') {
-      res.redirect(`/responses/${result.value}`);
-    } else {
-      res
-        .status(500)
-        .send('Error processing response:<br /><br />' + result?.reason);
-    }
+    res.redirect(`/responses/${results[0]}`);
     return;
   }
 
@@ -272,7 +284,13 @@ app.get('/responses/:id', async (req, res) => {
   }
   const brandSentiment = await getBrandSentimentByResponseId(responseId);
   const links = await getLinksByResponseId(responseId);
-  res.render('responses/view', { brandSentiment, links, response });
+  const searchQueries = await getSearchQueriesByResponseId(responseId);
+  res.render('responses/view', {
+    brandSentiment,
+    links,
+    searchQueries,
+    response,
+  });
 });
 
 app.get('/links', async (_, res) => {

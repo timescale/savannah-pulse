@@ -59,10 +59,20 @@ export type BrandSentiment = Selectable<BrandSentimentTable>;
 export type NewBrandSentiment = Insertable<BrandSentimentTable>;
 export type BrandSentimentUpdate = Updateable<BrandSentimentTable>;
 
+export interface SearchQueryTable {
+  id: Generated<number>;
+  response_id: number;
+  query: string;
+}
+export type SearchQuery = Selectable<SearchQueryTable>;
+export type NewSearchQuery = Insertable<SearchQueryTable>;
+export type SearchQueryUpdate = Updateable<SearchQueryTable>;
+
 export interface Database {
   brand_sentiment: BrandSentimentTable;
   competitors: CompetitorTable;
   links: LinkTable;
+  search_queries: SearchQueryTable;
   prompts: PromptTable;
   responses: ResponseTable;
 }

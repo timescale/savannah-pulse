@@ -1,4 +1,6 @@
-import { db, type NewResponse } from '../db';
+import type { Transaction } from 'kysely';
+
+import { type Database, db, type NewResponse } from '../db';
 
 export const getResponses = async () => {
   return await db
@@ -31,8 +33,11 @@ export const getResponseById = async (id: number) => {
     .executeTakeFirst();
 };
 
-export const insertResponse = async (response: NewResponse) => {
-  return await db
+export const insertResponse = async (
+  response: NewResponse,
+  trx?: Transaction<Database>,
+) => {
+  return await (trx || db)
     .insertInto('responses')
     .values(response)
     .returning(['id'])

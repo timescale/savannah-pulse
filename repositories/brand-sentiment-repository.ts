@@ -1,4 +1,6 @@
-import { db, type NewBrandSentiment } from '../db';
+import type { Transaction } from 'kysely';
+
+import { type Database, db, type NewBrandSentiment } from '../db';
 
 export const getBrandSentiment = async () => {
   return await db
@@ -34,8 +36,9 @@ export const getBrandSentimentByResponseId = async (responseId: number) => {
 
 export const insertBrandSentiment = async (
   brandSentiment: NewBrandSentiment,
+  trx?: Transaction<Database>,
 ) => {
-  return await db
+  return await (trx || db)
     .insertInto('brand_sentiment')
     .values(brandSentiment)
     .returning(['id'])
