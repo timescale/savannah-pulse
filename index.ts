@@ -126,12 +126,18 @@ app.post('/prompts/add', async (req, res) => {
 
   if (
     !prompt &&
-    (!prompts || !Array.isArray(prompts) || prompts.length === 0)
+    (!prompts ||
+      (!Array.isArray(prompts) && typeof prompts !== 'string') ||
+      prompts.length === 0)
   ) {
     res.status(400).send('Prompt is required');
     return;
   }
-  const promptArray = prompts ? prompts : [prompt];
+  const promptArray = prompts
+    ? Array.isArray(prompts)
+      ? prompts
+      : [prompts]
+    : [prompt];
   for (const p of promptArray) {
     await insertPrompt({ models, prompt: p });
   }
