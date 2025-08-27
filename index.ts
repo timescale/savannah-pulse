@@ -41,6 +41,7 @@ import {
   DEFAULT_RESPONSE_MODELS,
   getResponse,
   SUPPORTED_RESPONSE_MODELS,
+  SUPPORTED_RESPONSE_MODELS_BY_PROVIDER,
 } from './services/response';
 
 const app = express();
@@ -105,16 +106,7 @@ app.get('/prompts', async (_, res) => {
 app.get('/prompts/add', (_, res) => {
   res.render('prompts/add', {
     defaultModels: DEFAULT_RESPONSE_MODELS,
-    supportedModels: SUPPORTED_RESPONSE_MODELS.reduce(
-      (acc, model) => {
-        const parts = model.split(':');
-        const provider = parts[0] as string;
-        acc[provider] = acc[provider] || [];
-        acc[provider].push(parts[1] as string);
-        return acc;
-      },
-      {} as { [provider: string]: string[] },
-    ),
+    supportedModels: SUPPORTED_RESPONSE_MODELS_BY_PROVIDER,
   });
 });
 
@@ -160,7 +152,11 @@ Generate a list of related search prompts a user might type into ChatGPT or Perp
     }
   }
 
-  res.render('prompts/generate', { promptText });
+  res.render('prompts/generate', {
+    defaultModels: DEFAULT_RESPONSE_MODELS,
+    promptText,
+    supportedModels: SUPPORTED_RESPONSE_MODELS_BY_PROVIDER,
+  });
 });
 
 app.post('/prompts/generate', async (req, res) => {

@@ -27,6 +27,18 @@ export const SUPPORTED_RESPONSE_MODELS = [
   'perplexity:sonar-reasoning-pro',
 ];
 
+export const SUPPORTED_RESPONSE_MODELS_BY_PROVIDER =
+  SUPPORTED_RESPONSE_MODELS.reduce(
+    (acc, model) => {
+      const parts = model.split(':');
+      const provider = parts[0] as string;
+      acc[provider] = acc[provider] || [];
+      acc[provider].push(parts[1] as string);
+      return acc;
+    },
+    {} as { [provider: string]: string[] },
+  );
+
 export const DEFAULT_RESPONSE_MODELS = [
   'anthropic:claude-3-5-haiku-latest',
   'google:gemini-2.5-flash',

@@ -11,32 +11,7 @@
         <textarea id="prompt" name="prompt" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 16px; min-height: 200px; resize: vertical;" placeholder="Enter your prompt content here..."></textarea>
     </div>
 
-    <div style="margin-bottom: 20px;">
-        <label style="display: block; margin-bottom: 10px; font-weight: bold;">Select Models:</label>
-        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;">
-            <% Object.keys(supportedModels).forEach(provider => { %>
-                <div>
-                    <div style="font-weight: bold; margin-bottom: 10px; color: #333;">
-                        <i class="bi bi-<%= provider %>" style="vertical-align: middle; margin-right: 8px;"></i><%= provider %>
-                    </div>
-                    <% supportedModels[provider].forEach(model => { %>
-                        <div style="margin-bottom: 5px;">
-                            <label style="display: flex; align-items: center; font-weight: normal;">
-                                <input
-                                    type="checkbox"
-                                    name="models"
-                                    value="<%= provider %>:<%= model %>"
-                                    style="margin-right: 8px;"
-                                    <%= defaultModels.includes(provider + ':' + model) ? 'checked' : '' %>
-                                />
-                                <%= model %>
-                            </label>
-                        </div>
-                    <% }) %>
-                </div>
-            <% }) %>
-        </div>
-    </div>
+    <%- include('models', { supportedModels, defaultModels }) %>
 
     <div style="margin-bottom: 20px;">
         <button  type="submit" class="btn btn-primary">Add Prompt</button>
