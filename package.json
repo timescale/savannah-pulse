@@ -14,7 +14,7 @@
     "url": "git+ssh://git@github.com/timescale/savannah-pulse.git"
   },
   "author": "Matthew Peveler <mpeveler@tigerdata.com>",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/timescale/savannah-pulse/issues"
   },
