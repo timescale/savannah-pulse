@@ -2,6 +2,7 @@ import 'dotenv/config';
 import express from 'express';
 import { marked } from 'marked';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { db } from './db';
 import {
@@ -44,6 +45,9 @@ import {
   SUPPORTED_RESPONSE_MODELS_BY_PROVIDER,
 } from './services/response';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const app = express();
 const port = process.env['PORT'] || 3000;
 
@@ -61,15 +65,17 @@ app.use(express.urlencoded({ extended: true }));
 // Serve Bootstrap CSS and JS from node_modules
 app.use(
   '/bootstrap/css',
-  express.static(path.join(__dirname, 'node_modules/bootstrap/dist/css')),
+  express.static(path.join(__dirname, '..', 'node_modules/bootstrap/dist/css')),
 );
 app.use(
   '/bootstrap/js',
-  express.static(path.join(__dirname, 'node_modules/bootstrap/dist/js')),
+  express.static(path.join(__dirname, '..', 'node_modules/bootstrap/dist/js')),
 );
 app.use(
   '/bootstrap/icons',
-  express.static(path.join(__dirname, 'node_modules/bootstrap-icons/font')),
+  express.static(
+    path.join(__dirname, '..', 'node_modules/bootstrap-icons/font'),
+  ),
 );
 
 // Serve static files from public directory

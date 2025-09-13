@@ -2,10 +2,11 @@
   "name": "savannah-pulse",
   "version": "1.0.0",
   "description": "See what people are saying out in the wild.",
+  "type": "module",
   "scripts": {
-    "dev": "tsx --watch index.ts",
+    "dev": "tsx --watch server/index.ts",
     "lint": "eslint .",
-    "start": "tsx index.ts",
+    "start": "tsx server/index.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
     "typecheck": "tsc --noEmit"
   },

@@ -1,0 +1,4 @@
+.env
+.env.sample
+eslint.config.mjs
+*-test.ts

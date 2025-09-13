@@ -15,5 +15,22 @@ services:
       timeout: 5s
       retries: 5
 
+  app:
+    build:
+      context: .
+      target: builder
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file: .env
+    ports:
+      - 3000:3000
+    volumes:
+      - ./server:/app/server
+      - ./package-lock.json:/app/package-lock.json
+      - ./package.json:/app/package.json
+      - ./tsconfig.json:/app/tsconfig.json
+    command: npm run dev
+
 volumes:
   postgres_data:
