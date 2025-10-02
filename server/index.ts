@@ -196,11 +196,17 @@ app.get('/prompts/add', async (_, res) => {
 app.post('/prompts/add', async (req, res) => {
   const { models, prompt, prompts, tags } = req.body;
 
-  if (!models || !Array.isArray(models) || models.length === 0) {
+  if (
+    !models &&
+    (!models ||
+      (!Array.isArray(models) && typeof models !== 'string') ||
+      models.length === 0)
+  ) {
     res.status(400).send('At least one model is required');
     return;
   }
-  for (const model of models) {
+  const modelArray = models ? (Array.isArray(models) ? models : [models]) : [];
+  for (const model of modelArray) {
     if (!SUPPORTED_RESPONSE_MODELS.includes(model)) {
       res.status(400).send(`Unsupported model: ${model}`);
       return;
@@ -222,7 +228,7 @@ app.post('/prompts/add', async (req, res) => {
       : [prompts]
     : [prompt];
   for (const p of promptArray) {
-    const { id } = await insertPrompt({ models, prompt: p });
+    const { id } = await insertPrompt({ models: modelArray, prompt: p });
     if (tags && Array.isArray(tags)) {
       for (const tagIdStr of tags) {
         const tagId = parseInt(tagIdStr, 10);
