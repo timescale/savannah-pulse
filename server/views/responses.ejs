@@ -10,6 +10,7 @@
         <option value="google">Google</option>
         <option value="openai">OpenAI</option>
         <option value="perplexity">Perplexity</option>
+        <option value="xai">xAI</option>
     </select>
 </div>
 
@@ -41,7 +42,7 @@
 
                         <% const modelParts = response.model.split(':'); %>
                         <i
-                            class="bi bi-<%= modelParts[0] %>"
+                            class="bi bi-<%= modelParts[0] === 'xai' ? 'twitter-x' : modelParts[0] %>"
                             style="cursor: help;"
                             title="<%= response.model %>"
                         ></i>

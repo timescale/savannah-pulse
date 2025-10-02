@@ -3,6 +3,7 @@ import { getResponse as googleResponse } from './google';
 import { getResponse as openAiResponse } from './openai';
 import { getResponse as perplexityResponse } from './perplexity';
 import type { Response } from './types';
+import { getResponse as xAIResponse } from './xai';
 
 export const SUPPORTED_RESPONSE_MODELS = [
   'anthropic:claude-opus-4-1-120250805',
@@ -25,6 +26,11 @@ export const SUPPORTED_RESPONSE_MODELS = [
   'perplexity:sonar-pro',
   'perplexity:sonar-reasoning',
   'perplexity:sonar-reasoning-pro',
+  'xai:grok-4-fast-reasoning',
+  'xai:grok-4-fast-non-reasoning',
+  'xai:grok-4-0709',
+  'xai:grok-3-mini',
+  'xai:grok-3',
 ];
 
 export const SUPPORTED_RESPONSE_MODELS_BY_PROVIDER =
@@ -44,6 +50,7 @@ export const DEFAULT_RESPONSE_MODELS = [
   'google:gemini-2.5-flash',
   'openai:gpt-5-mini',
   'perplexity:sonar',
+  'xai:grok-4-fast-non-reasoning',
 ];
 
 export const getResponse = async (
@@ -63,6 +70,8 @@ export const getResponse = async (
       return openAiResponse(modelName, prompt);
     case 'perplexity':
       return perplexityResponse(modelName, prompt);
+    case 'xai':
+      return xAIResponse(modelName, prompt);
     default:
       throw new Error(`Unsupported model: ${model}`);
   }

@@ -36,7 +36,7 @@
                                         <% const modelParts = model.split(':'); %>
                                         <li>
                                             <a class="dropdown-item" href="/prompts/<%= prompt.id %>/run?model=<%= model %>">
-                                                <i class="bi bi-<%= modelParts[0] %>"></i> <%= model %>
+                                                <i class="bi bi-<%= modelParts[0] === 'xai' ? 'twitter-x' : modelParts[0] %>"></i> <%= model %>
                                             </a>
                                         </li>
                                     <% } %>
