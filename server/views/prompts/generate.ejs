@@ -20,7 +20,7 @@
     <h2>Generated Prompts</h2>
     <form id="prompt-form" style="display: none;" method="POST" action="/prompts/add">
         <div id="prompt-list"></div>
-        <%- include('models', { supportedModels, defaultModels }) %>
+        <%- include('models', { supportedModels, models: defaultModels }) %>
         <div style="margin-top: 20px;">
             <button type="submit" class="btn btn-primary">Submit Selected Prompts</button>
         </div>

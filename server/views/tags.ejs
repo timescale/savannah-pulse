@@ -1,0 +1,36 @@
+<%- include('partials/header', { title: 'Tags', currentPage: 'tags' }) %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Tags</h1>
+    <a href="/tags/add" class="btn btn-primary">Add Tag</a>
+</div>
+
+<table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+    <thead>
+        <tr style="background-color: #f2f2f2;">
+            <th style="border: 1px solid #ddd; padding: 12px; text-align: left;">Name</th>
+            <th style="border: 1px solid #ddd; padding: 12px; text-align: left;">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        <% if (tags && tags.length > 0) { %>
+            <% tags.forEach(tag => { %>
+                <tr>
+                    <td style="border: 1px solid #ddd; padding: 12px;"><%= tag.name %></td>
+                    <td style="border: 1px solid #ddd; padding: 12px;">
+                        <a href="/tags/<%= tag.id %>/edit" class="btn btn-secondary btn-sm ms-2" style="margin-right: 10px;">Edit</a>
+                        <a href="/tags/<%= tag.id %>/delete" class="btn btn-danger btn-sm ms-2" onclick="return confirm('Are you sure you want to delete this tag?')">Delete</a>
+                    </td>
+                </tr>
+            <% }); %>
+        <% } else { %>
+            <tr>
+                <td colspan="2" style="border: 1px solid #ddd; padding: 12px; text-align: center; color: #666;">
+                    No tags found
+                </td>
+            </tr>
+        <% } %>
+    </tbody>
+</table>
+
+<%- include('partials/footer') %>

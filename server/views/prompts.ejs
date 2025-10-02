@@ -45,6 +45,7 @@
                             <div class="mb-1">
                                 <a class="btn btn-secondary btn-sm" href="/prompts/generate?promptId=<%= prompt.id %>">Generated related</a>
                             </div>
+                            <a href="/prompts/<%= prompt.id %>/edit" class="btn btn-secondary btn-sm">Edit</a>
                             <a href="/prompts/<%= prompt.id %>/delete" class="btn btn-danger btn-sm ms-2" onclick="return confirm('Are you sure you want to delete this prompt?')">Delete</a>
                         </div>
                     </td>

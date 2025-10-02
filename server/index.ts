@@ -25,7 +25,13 @@ import {
   getPromptById,
   getPrompts,
   insertPrompt,
+  updatePrompt,
 } from './repositories/prompts-repository';
+import {
+  deletePromptTag,
+  getTagsForPrompt,
+  insertPromptTag,
+} from './repositories/prompts-tags-repository';
 import {
   getResponseById,
   getResponses,
@@ -36,6 +42,13 @@ import {
   getSearchQueriesByResponseId,
   insertSearchQuery,
 } from './repositories/search-queries-repository';
+import {
+  deleteTag,
+  getTag,
+  getTags,
+  insertTag,
+  updateTag,
+} from './repositories/tags-repository';
 import { generateBrandSentiment } from './services/brand-sentiment';
 import { generatePrompts } from './services/prompt-generator';
 import {
@@ -104,20 +117,84 @@ app.post('/competitors/add', async (req, res) => {
   res.redirect('/competitors');
 });
 
+app.get('/tags', async (_, res) => {
+  res.render('tags', { tags: await getTags() });
+});
+
+app.get('/tags/add', (_, res) => {
+  res.render('tags/add');
+});
+
+app.post('/tags/add', async (req, res) => {
+  const { name } = req.body;
+  if (!name) {
+    res.status(400).send('Name is required');
+    return;
+  }
+  await insertTag(name);
+  res.redirect('/tags');
+});
+
+app.get('/tags/:id/edit', async (req, res) => {
+  const tagId = parseInt(req.params.id, 10);
+  if (isNaN(tagId)) {
+    res.status(400).send('Invalid tag ID');
+    return;
+  }
+  const tag = await getTag(tagId);
+  if (!tag) {
+    res.status(404).send('Tag not found');
+    return;
+  }
+  res.render('tags/edit', { tag });
+});
+
+app.post('/tags/:id/edit', async (req, res) => {
+  const tagId = parseInt(req.params.id, 10);
+  if (isNaN(tagId)) {
+    res.status(400).send('Invalid tag ID');
+    return;
+  }
+  const { name } = req.body;
+  if (!name) {
+    res.status(400).send('Name is required');
+    return;
+  }
+  const tag = await getTag(tagId);
+  if (!tag) {
+    res.status(404).send('Tag not found');
+    return;
+  }
+  await updateTag(tagId, { name });
+  res.redirect('/tags');
+});
+
+app.get('/tags/:id/delete', async (req, res) => {
+  const tagId = parseInt(req.params.id, 10);
+  if (isNaN(tagId)) {
+    res.status(400).send('Invalid tag ID');
+    return;
+  }
+  await deleteTag(tagId);
+  res.redirect('/tags');
+});
+
 app.get('/prompts', async (_, res) => {
   const prompts = await getPrompts();
   res.render('prompts', { prompts });
 });
 
-app.get('/prompts/add', (_, res) => {
-  res.render('prompts/add', {
+app.get('/prompts/add', async (_, res) => {
+  res.render('prompts/form', {
     defaultModels: DEFAULT_RESPONSE_MODELS,
+    prompt: null,
+    tags: await getTags(),
     supportedModels: SUPPORTED_RESPONSE_MODELS_BY_PROVIDER,
   });
 });
 
 app.post('/prompts/add', async (req, res) => {
-  const { models, prompt, prompts } = req.body;
+  const { models, prompt, prompts, tags } = req.body;
 
   if (!models || !Array.isArray(models) || models.length === 0) {
     res.status(400).send('At least one model is required');
@@ -145,7 +222,15 @@ app.post('/prompts/add', async (req, res) => {
       : [prompts]
     : [prompt];
   for (const p of promptArray) {
-    await insertPrompt({ models, prompt: p });
+    const { id } = await insertPrompt({ models, prompt: p });
+    if (tags && Array.isArray(tags)) {
+      for (const tagIdStr of tags) {
+        const tagId = parseInt(tagIdStr, 10);
+        if (!isNaN(tagId)) {
+          await insertPromptTag({ prompt_id: id, tag_id: tagId });
+        }
+      }
+    }
   }
   res.redirect('/prompts');
 });
@@ -174,6 +259,76 @@ Generate a list of related search prompts a user might type into ChatGPT or Perp
 app.post('/prompts/generate', async (req, res) => {
   const prompts = await generatePrompts(req.body.base);
   res.json({ prompts });
+});
+
+app.get('/prompts/:id/edit', async (req, res) => {
+  const promptId = parseInt(req.params.id, 10);
+  if (isNaN(promptId)) {
+    res.status(400).send('Invalid prompt ID');
+    return;
+  }
+  const prompt = await getPromptById(promptId);
+  console.log(prompt);
+  if (!prompt) {
+    res.status(404).send('Prompt not found');
+    return;
+  }
+  res.render('prompts/form', {
+    prompt,
+    tags: await getTags(),
+    supportedModels: SUPPORTED_RESPONSE_MODELS_BY_PROVIDER,
+  });
+});
+
+app.post('/prompts/:id/edit', async (req, res) => {
+  const promptId = parseInt(req.params.id, 10);
+  if (isNaN(promptId)) {
+    res.status(400).send('Invalid prompt ID');
+    return;
+  }
+  const existingPrompt = await getPromptById(promptId);
+  if (!existingPrompt) {
+    res.status(404).send('Prompt not found');
+    return;
+  }
+
+  const { models, tags } = req.body;
+  if (!models || !Array.isArray(models) || models.length === 0) {
+    res.status(400).send('At least one model is required');
+    return;
+  }
+  for (const model of models) {
+    if (!SUPPORTED_RESPONSE_MODELS.includes(model)) {
+      res.status(400).send(`Unsupported model: ${model}`);
+      return;
+    }
+  }
+
+  console.log(tags);
+
+  await updatePrompt(promptId, { models });
+
+  const promptTags = await getTagsForPrompt(promptId);
+  const promptTagIds = promptTags.map((t) => t.id);
+  const tagIds =
+    tags && Array.isArray(tags)
+      ? tags
+          .map((t: string) => parseInt(t, 10))
+          .filter((t: number) => !isNaN(t))
+      : [];
+
+  const newTags = tagIds.filter((id) => !promptTagIds.includes(id));
+  console.log('newTags', newTags);
+  for (const tagId of newTags) {
+    await insertPromptTag({ prompt_id: promptId, tag_id: tagId });
+  }
+  const removedTags = promptTagIds.filter((id) => !tagIds.includes(id));
+  console.log('removedTags', removedTags);
+  for (const tagId of removedTags) {
+    await deletePromptTag(promptId, tagId);
+  }
+
+  res.redirect('/prompts');
 });
 
 app.get('/prompts/:id/run', async (req, res) => {

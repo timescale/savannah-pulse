@@ -1,0 +1,48 @@
+<%- include('../partials/header', { title: 'Add Prompt', currentPage: 'prompts' }) %>
+
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <h1>Add Prompt</h1>
+    <a href="/prompts" style="background-color: #666; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; font-weight: bold;">Back to Prompts</a>
+</div>
+
+<form method="POST" action="/prompts/<%= prompt ? prompt.id + '/edit' : 'add' %>">
+    <div style="margin-bottom: 20px;">
+        <label for="prompt" style="display: block; margin-bottom: 5px; font-weight: bold;">Prompt:</label>
+        <textarea
+            id="prompt"
+            name="prompt"
+            style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 16px; min-height: 200px; resize: vertical;"
+            placeholder="Enter your prompt content here..."
+            required
+            <%= prompt ? 'disabled' : '' %>
+        ><%= prompt?.prompt || '' %></textarea>
+    </div>
+
+    <% var models = prompt?.models || defaultModels; %>
+    <%- include('models', { supportedModels, models }) %>
+
+    <div style="margin-bottom: 20px;">
+        <div style="margin-bottom: 5px; font-weight: bold;">Tags:</div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px;">
+            <% tags.forEach(tag => { %>
+                <label style="display: flex; align-items: center; font-weight: normal;">
+                    <input
+                        type="checkbox"
+                        name="tags"
+                        value="<%= tag.id %>"
+                        style="margin-right: 5px;"
+                        <%= prompt?.tags?.includes(tag.id) ? 'checked' : '' %>
+                    />
+                    <%= tag.name %>
+                </label>
+            <% }) %>
+        </div>
+    </div>
+
+    <div style="margin-bottom: 20px;">
+        <button  type="submit" class="btn btn-primary"><%= prompt ? 'Edit' : 'Add' %> Prompt</button>
+        <a href="/prompts" class="btn btn-danger" style="margin-left: 10px;">Cancel</a>
+    </div>
+</form>
+
+<%- include('../partials/footer') %>

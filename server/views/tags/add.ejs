@@ -1,0 +1,20 @@
+<%- include('../partials/header', { title: 'Add Tag', currentPage: 'tags' }) %>
+
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <h1>Add Tag</h1>
+    <a href="/tags" style="background-color: #666; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; font-weight: bold;">Back to Tags</a>
+</div>
+
+<form method="POST" action="/tags/add">
+    <div style="margin-bottom: 20px;">
+        <label for="name" style="display: block; margin-bottom: 5px; font-weight: bold;">Name:</label>
+        <input id="name" name="name" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 16px;" placeholder="Enter tag name here..." />
+    </div>
+
+    <div style="margin-bottom: 20px;">
+        <button  type="submit" class="btn btn-primary">Add Tag</button>
+        <a href="/tags" class="btn btn-danger" style="margin-left: 10px;">Cancel</a>
+    </div>
+</form>
+
+<%- include('../partials/footer') %>

@@ -1,5 +1,5 @@
 <div style="margin-bottom: 20px;">
-    <label style="display: block; margin-bottom: 10px; font-weight: bold;">Select Models:</label>
+    <div style="margin-bottom: 10px; font-weight: bold;">Select Models:</div>
     <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;">
         <% Object.keys(supportedModels).forEach(provider => { %>
             <div>
@@ -14,7 +14,7 @@
                                 name="models"
                                 value="<%= provider %>:<%= model %>"
                                 style="margin-right: 8px;"
-                                <%= defaultModels.includes(provider + ':' + model) ? 'checked' : '' %>
+                                <%= models.includes(provider + ':' + model) ? 'checked' : '' %>
                             />
                             <%= model %>
                         </label>

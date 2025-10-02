@@ -68,11 +68,29 @@ export type SearchQuery = Selectable<SearchQueryTable>;
 export type NewSearchQuery = Insertable<SearchQueryTable>;
 export type SearchQueryUpdate = Updateable<SearchQueryTable>;
 
+export interface TagTable {
+  id: Generated<number>;
+  name: string;
+}
+export type Tag = Selectable<TagTable>;
+export type NewTag = Insertable<TagTable>;
+export type TagUpdate = Updateable<TagTable>;
+
+export interface PromptTagsTable {
+  prompt_id: number;
+  tag_id: number;
+}
+
+export type PromptTag = Selectable<PromptTagsTable>;
+export type NewPromptTag = Insertable<PromptTagsTable>;
+
 export interface Database {
   brand_sentiment: BrandSentimentTable;
   competitors: CompetitorTable;
+  tags: TagTable;
   links: LinkTable;
   search_queries: SearchQueryTable;
   prompts: PromptTable;
+  prompts_tags: PromptTagsTable;
   responses: ResponseTable;
 }
