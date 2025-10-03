@@ -1,0 +1,44 @@
+<%- include('../partials/header', { title: 'Follow Up', currentPage: 'responses' }) %>
+
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <h1>Follow Up Conversation</h1>
+    <a href="/responses/<%= response.id %>" class="btn btn-secondary">Back to Response</a>
+</div>
+
+<div style="background-color: white; border: 1px solid #ddd; border-radius: 4px; padding: 20px; margin-bottom: 20px;">
+    <h3 style="margin-top: 0; color: #333; border-bottom: 2px solid #04AA6D; padding-bottom: 10px;">Conversation</h3>
+
+    <div style="margin-bottom: 20px;">
+        <% parsedFollowUp.forEach((message, index) => { %>
+            <div style="margin-bottom: 15px; padding: 15px; border-radius: 4px; <%= message.role === 'user' ? 'background-color: #f0f8ff; border-left: 4px solid #04AA6D;' : 'background-color: #f9f9f9; border-left: 4px solid #666;' %>">
+                <div style="font-weight: bold; margin-bottom: 5px; color: <%= message.role === 'user' ? '#04AA6D' : '#666' %>; text-transform: capitalize;">
+                    <%= message.role %>
+                </div>
+                <div style="line-height: 1.6; word-wrap: break-word;">
+                    <% if (message.type === 'web_search_call') { %>
+                        Web search call: <%= message.action.query %>
+                    <% } else if (message.type === 'message' || !message.type) { %>
+                        <%- markdown(message.content[0].text) %>
+                    <% } %>
+                </div>
+            </div>
+        <% }); %>
+    </div>
+
+    <form method="POST" action="/responses/<%= response.id %>/followup/<%= followup.id %>" style="margin-top: 20px;">
+        <div style="margin-bottom: 15px;">
+            <label for="message" style="display: block; font-weight: bold; margin-bottom: 5px; color: #333;">New Message</label>
+            <textarea
+                id="message"
+                name="message"
+                rows="4"
+                required
+                style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-family: Arial, sans-serif;"
+                placeholder="Enter your follow-up message..."
+            ></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Send</button>
+    </form>
+</div>
+
+<%- include('../partials/footer') %>

@@ -2,7 +2,7 @@
 
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
     <h1>Response Details</h1>
-    <a class="btn btn-secondary">Back to Responses</a>
+    <a href="/responses" class="btn btn-secondary">Back to Responses</a>
 </div>
 
 <div style="background-color: white; border: 1px solid #ddd; border-radius: 4px; padding: 20px; margin-bottom: 20px;">
@@ -27,6 +27,37 @@
         </div>
     </div>
 </div>
+
+<% if (response.raw && ['openai'].includes(response.model.split(':')[0])) { %>
+<div style="background-color: white; border: 1px solid #ddd; border-radius: 4px; padding: 20px; margin-bottom: 20px;">
+    <h3 style="margin-top: 0; color: #333; border-bottom: 2px solid #04AA6D; padding-bottom: 10px;">Follow Ups</h3>
+    <a href="/responses/<%= response.id %>/followup/new" class="btn btn-primary" style="margin-bottom: 15px;">New Follow Up</a>
+    <h4 style="margin-top: 0; color: #333; border-bottom: 1px solid #04AA6D; padding-bottom: 8px;">Previous Follow Ups</h4>
+    <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+        <thead>
+            <tr style="background-color: #04AA6D; color: white;">
+                <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">ID</th>
+                <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Messages</th>
+                <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Created At</th>
+                <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% followups.forEach(({ id, followup_count, created_at }) => { %>
+                <tr style="border-bottom: 1px solid #ddd;">
+                    <td style="padding: 12px; border: 1px solid #ddd;"><%= id %></td>
+                    <td style="padding: 12px; border: 1px solid #ddd;"><%= followup_count %></td>
+                    <td style="padding: 12px; border: 1px solid #ddd;"><%= new Date(created_at).toLocaleString() %></td>
+                    <td style="padding: 12px; border: 1px solid #ddd;">
+                        <a class="btn btn-secondary" style="margin-right: 5px;">View</a>
+                        <a class="btn btn-danger">Delete</a>
+                    </td>
+                </tr>
+            <% }); %>
+        </tbody>
+    </table>
+</div>
+<% } %>
 
 <% if (searchQueries && searchQueries.length > 0) { %>
 <div style="background-color: white; border: 1px solid #ddd; border-radius: 4px; padding: 20px; margin-bottom: 20px;">

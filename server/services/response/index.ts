@@ -1,6 +1,13 @@
-import { getResponse as anthropicResponse } from './anthropic';
+import {
+  parseFollowUp as anthropicParseFollowUp,
+  getResponse as anthropicResponse,
+} from './anthropic';
 import { getResponse as googleResponse } from './google';
-import { getResponse as openAiResponse } from './openai';
+import {
+  getPriorMessages as openAiGetPriorMessages,
+  parseFollowUp as openAiParseFollowUp,
+  getResponse as openAiResponse,
+} from './openai';
 import { getResponse as perplexityResponse } from './perplexity';
 import type { Response } from './types';
 import { getResponse as xAIResponse } from './xai';
@@ -56,6 +63,7 @@ export const DEFAULT_RESPONSE_MODELS = [
 export const getResponse = async (
   prompt: string,
   model: string,
+  priorMessages: any[] = [],
 ): Promise<Response> => {
   const [provider, modelName] = model.split(':');
   if (!provider || !modelName) {
@@ -63,16 +71,62 @@ export const getResponse = async (
   }
   switch (provider) {
     case 'anthropic':
-      return anthropicResponse(modelName, prompt);
+      return anthropicResponse(modelName, prompt, priorMessages);
     case 'google':
-      return googleResponse(modelName, prompt);
+      return googleResponse(modelName, prompt, priorMessages);
     case 'openai':
-      return openAiResponse(modelName, prompt);
+      return openAiResponse(modelName, prompt, priorMessages);
     case 'perplexity':
-      return perplexityResponse(modelName, prompt);
+      return perplexityResponse(modelName, prompt, priorMessages);
     case 'xai':
-      return xAIResponse(modelName, prompt);
+      return xAIResponse(modelName, prompt, priorMessages);
     default:
       throw new Error(`Unsupported model: ${model}`);
+  }
+};
+
+export const parseFollowUp = (
+  model: string,
+  prompt: string,
+  raw: { [key: string]: any },
+  followup: { [key: string]: any }[],
+) => {
+  const [provider, modelName] = model.split(':');
+  if (!provider || !modelName) {
+    throw new Error(`Invalid model format: ${model}`);
+  }
+  switch (provider) {
+    case 'anthropic':
+      return anthropicParseFollowUp(prompt, raw, followup);
+    case 'openai':
+      return openAiParseFollowUp(
+        prompt,
+        raw as Parameters<typeof openAiParseFollowUp>[1],
+        followup,
+      );
+    default:
+      throw new Error(`Unsupported model for follow-up parsing: ${model}`);
+  }
+};
+
+export const getPriorMessages = (
+  model: string,
+  prompt: string,
+  raw: any,
+  followup: any[],
+) => {
+  const [provider, modelName] = model.split(':');
+  if (!provider || !modelName) {
+    throw new Error(`Invalid model format: ${model}`);
+  }
+  switch (provider) {
+    case 'openai':
+      return openAiGetPriorMessages(
+        prompt,
+        raw as Parameters<typeof openAiGetPriorMessages>[1],
+        followup as Parameters<typeof openAiGetPriorMessages>[2],
+      );
+    default:
+      throw new Error(`Unsupported model for prior messages: ${model}`);
   }
 };

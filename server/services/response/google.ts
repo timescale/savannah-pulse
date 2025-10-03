@@ -5,6 +5,7 @@ import type { Response } from './types';
 export const getResponse = async (
   model: string,
   prompt: string,
+  priorMessages: any[],
 ): Promise<Response> => {
   const response = await google.models.generateContent({
     model: model,
@@ -40,6 +41,7 @@ export const getResponse = async (
 
   return {
     content: response.text || '',
+    raw: {},
     searchQueries:
       response.candidates?.[0]?.groundingMetadata?.webSearchQueries || [],
     urls: [...new Set(urls)],

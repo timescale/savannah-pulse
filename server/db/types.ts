@@ -22,11 +22,25 @@ export interface ResponseTable {
   prompt_id: number;
   model: string;
   response: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  raw: { [key: string]: any };
   created_at: ColumnType<Date, never, never>;
 }
 export type Response = Selectable<ResponseTable>;
 export type NewResponse = Insertable<ResponseTable>;
 export type ResponseUpdate = Updateable<ResponseTable>;
+
+export interface ResponseFollowUpTable {
+  id: Generated<number>;
+  response_id: number;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  followup: { [key: string]: any }[];
+  created_at: ColumnType<Date, never, never>;
+  updated_at: ColumnType<Date, never, Date>;
+}
+export type ResponseFollowUp = Selectable<ResponseFollowUpTable>;
+export type NewResponseFollowUp = Insertable<ResponseFollowUpTable>;
+export type ResponseFollowUpUpdate = Updateable<ResponseFollowUpTable>;
 
 export interface LinkTable {
   id: Generated<number>;
@@ -92,5 +106,6 @@ export interface Database {
   search_queries: SearchQueryTable;
   prompts: PromptTable;
   prompts_tags: PromptTagsTable;
+  response_followups: ResponseFollowUpTable;
   responses: ResponseTable;
 }

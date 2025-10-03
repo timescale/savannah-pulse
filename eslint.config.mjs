@@ -10,6 +10,7 @@ export default tseslint.config(
   prettierPlugin,
   {
     rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
       'import/enforce-node-protocol-usage': ['error', 'always'],
       'import/named': 'off',
       'import/no-unresolved': 'off',

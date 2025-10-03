@@ -33,6 +33,12 @@ import {
   insertPromptTag,
 } from './repositories/prompts-tags-repository';
 import {
+  getResponseFollowUpById,
+  getResponseFollowUpsByResponseId,
+  insertResponseFollowUp,
+  updateResponseFollowUp,
+} from './repositories/response-followup-repository';
+import {
   getResponseById,
   getResponses,
   getResponsesByProvider,
@@ -53,7 +59,9 @@ import { generateBrandSentiment } from './services/brand-sentiment';
 import { generatePrompts } from './services/prompt-generator';
 import {
   DEFAULT_RESPONSE_MODELS,
+  getPriorMessages,
   getResponse,
+  parseFollowUp,
   SUPPORTED_RESPONSE_MODELS,
   SUPPORTED_RESPONSE_MODELS_BY_PROVIDER,
 } from './services/response';
@@ -375,6 +383,7 @@ app.get('/prompts/:id/run', async (req, res) => {
         {
           prompt_id: promptId,
           model,
+          raw: response.raw,
           response: response.content,
         },
         trx,
@@ -454,12 +463,117 @@ app.get('/responses/:id', async (req, res) => {
   const brandSentiment = await getBrandSentimentByResponseId(responseId);
   const links = await getLinksByResponseId(responseId);
   const searchQueries = await getSearchQueriesByResponseId(responseId);
+  const followups = await getResponseFollowUpsByResponseId(responseId);
   res.render('responses/view', {
     brandSentiment,
+    followups,
     links,
     searchQueries,
     response,
   });
+});
+
+app.get('/responses/:id/followup/new', async (req, res) => {
+  const responseId = parseInt(req.params.id, 10);
+  if (isNaN(responseId)) {
+    res.status(400).send('Invalid response ID');
+    return;
+  }
+  const response = await getResponseById(responseId);
+  if (!response) {
+    res.status(404).send('Response not found');
+    return;
+  }
+
+  const { id } = await insertResponseFollowUp({
+    response_id: responseId,
+    followup: [],
+  });
+
+  res.redirect(`/responses/${responseId}/followup/${id}`);
+});
+
+app.get('/responses/:responseId/followup/:followupId', async (req, res) => {
+  const responseId = parseInt(req.params.responseId, 10);
+  if (isNaN(responseId)) {
+    res.status(400).send('Invalid response ID');
+    return;
+  }
+  const response = await getResponseById(responseId);
+  if (!response) {
+    res.status(404).send('Response not found');
+    return;
+  }
+
+  const followupId = parseInt(req.params.followupId, 10);
+  if (isNaN(followupId)) {
+    res.status(400).send('Invalid followup ID');
+    return;
+  }
+  const followup = await getResponseFollowUpById(followupId);
+  if (!followup) {
+    res.status(404).send('Followup not found');
+    return;
+  }
+
+  const parsedFollowUp = parseFollowUp(
+    response.model,
+    response.prompt,
+    response.raw,
+    followup.followup,
+  );
+
+  res.render('responses/followup', { followup, response, parsedFollowUp });
+});
+
+app.post('/responses/:responseId/followup/:followupId', async (req, res) => {
+  const responseId = parseInt(req.params.responseId, 10);
+  if (isNaN(responseId)) {
+    res.status(400).send('Invalid response ID');
+    return;
+  }
+  const response = await getResponseById(responseId);
+  if (!response) {
+    res.status(404).send('Response not found');
+    return;
+  }
+
+  const followupId = parseInt(req.params.followupId, 10);
+  if (isNaN(followupId)) {
+    res.status(400).send('Invalid followup ID');
+    return;
+  }
+  const followup = await getResponseFollowUpById(followupId);
+  if (!followup) {
+    res.status(404).send('Followup not found');
+    return;
+  }
+
+  const { message } = req.body;
+  if (!message || typeof message !== 'string' || message.trim().length === 0) {
+    res.status(400).send('Message is required');
+    return;
+  }
+
+  const newResponse = await getResponse(
+    message,
+    response.model,
+    getPriorMessages(
+      response.model,
+      response.prompt,
+      response.raw,
+      followup.followup,
+    ),
+  );
+  await updateResponseFollowUp(followupId, {
+    followup: [
+      ...followup.followup,
+      { role: 'user', content: [{ text: message }], type: 'message' },
+      newResponse.raw,
+    ],
+  });
+
+  res.redirect(`/responses/${responseId}/followup/${followupId}`);
 });
 
 app.get('/links', async (_, res) => {

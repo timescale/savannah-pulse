@@ -5,6 +5,7 @@ import type { Response } from './types';
 export const getResponse = async (
   model: string,
   prompt: string,
+  priorMessages: any[],
 ): Promise<Response> => {
   if (!anthropicMaxTokens[model]) {
     throw new Error(`Unknown model: ${model}`);
@@ -49,7 +50,28 @@ export const getResponse = async (
 
   return {
     content: responseText,
+    raw: response,
     searchQueries,
     urls: [...new Set(urls)],
   };
+};
+
+export const parseFollowUp = (
+  prompt: string,
+  raw: { [key: string]: any },
+  followup: { [key: string]: any }[],
+) => {
+  /*
+  const messages = followup.map((msg) => ({
+    role: msg.role,
+    content: msg.content,
+  }));
+
+  return {
+    ...raw,
+    messages,
+  };
+  */
+
+  return [];
 };
