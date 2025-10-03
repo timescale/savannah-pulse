@@ -7,6 +7,7 @@ export const anthropic = new Anthropic({
 });
 
 export const anthropicMaxTokens: Record<string, number> = {
+  'claude-sonnet-4-5-20250929': 64_000,
   'claude-opus-4-1-120250805': 32_000,
   'claude-opus-4-20250514': 32_000,
   'claude-sonnet-4-20250514': 64_000,

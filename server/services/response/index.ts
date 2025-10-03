@@ -13,6 +13,7 @@ import type { Response } from './types';
 import { getResponse as xAIResponse } from './xai';
 
 export const SUPPORTED_RESPONSE_MODELS = [
+  'anthropic:claude-sonnet-4-5-20250929',
   'anthropic:claude-opus-4-1-120250805',
   'anthropic:claude-opus-4-20250514',
   'anthropic:claude-sonnet-4-20250514',
@@ -53,7 +54,7 @@ export const SUPPORTED_RESPONSE_MODELS_BY_PROVIDER =
   );
 
 export const DEFAULT_RESPONSE_MODELS = [
-  'anthropic:claude-3-5-haiku-latest',
+  'anthropic:claude-sonnet-4-5-20250929',
   'google:gemini-2.5-flash',
   'openai:gpt-5-mini',
   'perplexity:sonar',
