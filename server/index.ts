@@ -196,9 +196,10 @@ app.get('/prompts', async (req, res) => {
   const tagParam = req.query['tag'];
   const selectedTag = tagParam ? parseInt(tagParam as string, 10) : null;
 
-  const prompts = selectedTag && !isNaN(selectedTag)
-    ? await getPromptsForTag(selectedTag)
-    : await getPrompts();
+  const prompts =
+    selectedTag && !isNaN(selectedTag)
+      ? await getPromptsForTag(selectedTag)
+      : await getPrompts();
 
   res.render('prompts', { prompts, tags, selectedTag });
 });

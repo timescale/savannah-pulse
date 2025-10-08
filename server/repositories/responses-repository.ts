@@ -35,7 +35,10 @@ export const getResponsesForTag = async (tagId: number) => {
     .execute();
 };
 
-export const getResponsesByProviderAndTag = async (provider: string, tagId: number) => {
+export const getResponsesByProviderAndTag = async (
+  provider: string,
+  tagId: number,
+) => {
   return await db
     .selectFrom('responses')
     .innerJoin('prompts', 'responses.prompt_id', 'prompts.id')
