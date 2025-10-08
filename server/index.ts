@@ -327,7 +327,6 @@ app.get('/prompts/:id/edit', async (req, res) => {
     return;
   }
   const prompt = await getPromptById(promptId);
-  console.log(prompt);
   if (!prompt) {
     res.status(404).send('Prompt not found');
     return;
@@ -398,12 +397,10 @@ app.post('/prompts/:id/edit', async (req, res) => {
       : [];
 
   const newTags = tagIds.filter((id) => !promptTagIds.includes(id));
-  console.log('newTags', newTags);
   for (const tagId of newTags) {
     await insertPromptTag({ prompt_id: promptId, tag_id: tagId });
   }
   const removedTags = promptTagIds.filter((id) => !tagIds.includes(id));
-  console.log('removedTags', removedTags);
   for (const tagId of removedTags) {
     await deletePromptTag(promptId, tagId);
   }
