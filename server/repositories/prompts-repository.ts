@@ -45,6 +45,16 @@ export const updatePrompt = async (id: number, prompt: PromptUpdate) => {
     .executeTakeFirstOrThrow();
 };
 
+export const getPromptsForTag = async (tagId: number) => {
+  return await db
+    .selectFrom('prompts')
+    .innerJoin('prompts_tags', 'prompts.id', 'prompts_tags.prompt_id')
+    .selectAll('prompts')
+    .where('prompts_tags.tag_id', '=', tagId)
+    .orderBy('id', 'asc')
+    .execute();
+};
+
 export const deletePrompt = async (id: number) => {
   return await db.deleteFrom('prompts').where('id', '=', id).execute();
 };

@@ -24,6 +24,7 @@ import {
   deletePrompt,
   getPromptById,
   getPrompts,
+  getPromptsForTag,
   insertPrompt,
   updatePrompt,
 } from './repositories/prompts-repository';
@@ -43,6 +44,8 @@ import {
   getResponseById,
   getResponses,
   getResponsesByProvider,
+  getResponsesByProviderAndTag,
+  getResponsesForTag,
   insertResponse,
 } from './repositories/responses-repository';
 import {
@@ -188,9 +191,16 @@ app.get('/tags/:id/delete', async (req, res) => {
   res.redirect('/tags');
 });
 
-app.get('/prompts', async (_, res) => {
-  const prompts = await getPrompts();
-  res.render('prompts', { prompts });
+app.get('/prompts', async (req, res) => {
+  const tags = await getTags();
+  const tagParam = req.query['tag'];
+  const selectedTag = tagParam ? parseInt(tagParam as string, 10) : null;
+
+  const prompts = selectedTag && !isNaN(selectedTag)
+    ? await getPromptsForTag(selectedTag)
+    : await getPrompts();
+
+  res.render('prompts', { prompts, tags, selectedTag });
 });
 
 app.get('/prompts/add', async (_, res) => {
@@ -441,13 +451,24 @@ app.get('/prompts/:id/delete', async (req, res) => {
 });
 
 app.get('/responses', async (req, res) => {
+  const tags = await getTags();
+  const providerParam = req.query['provider'] as string | undefined;
+  const tagParam = req.query['tag'];
+  const selectedTag = tagParam ? parseInt(tagParam as string, 10) : null;
+
   let responses: Awaited<ReturnType<typeof getResponses>>;
-  if (req.query['provider']) {
-    responses = await getResponsesByProvider(req.query['provider'] as string);
+
+  if (providerParam && selectedTag && !isNaN(selectedTag)) {
+    responses = await getResponsesByProviderAndTag(providerParam, selectedTag);
+  } else if (providerParam) {
+    responses = await getResponsesByProvider(providerParam);
+  } else if (selectedTag && !isNaN(selectedTag)) {
+    responses = await getResponsesForTag(selectedTag);
   } else {
     responses = await getResponses();
   }
-  res.render('responses', { responses });
+
+  res.render('responses', { responses, tags, selectedTag });
 });
 
 app.get('/responses/:id', async (req, res) => {

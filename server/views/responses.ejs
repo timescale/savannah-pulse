@@ -2,16 +2,29 @@
 
 <h1>Responses</h1>
 
-<div class="mb-3">
-    <label for="providerFilter" class="form-label">Filter by Provider:</label>
-    <select id="providerFilter" class="form-select" style="width: 200px;">
-        <option value="all">All</option>
-        <option value="anthropic">Anthropic</option>
-        <option value="google">Google</option>
-        <option value="openai">OpenAI</option>
-        <option value="perplexity">Perplexity</option>
-        <option value="xai">xAI</option>
-    </select>
+<div class="mb-3" style="display: flex; gap: 20px; align-items: flex-end;">
+    <div>
+        <label for="providerFilter" class="form-label">Filter by Provider:</label>
+        <select id="providerFilter" class="form-select" style="width: 200px;">
+            <option value="all">All</option>
+            <option value="anthropic">Anthropic</option>
+            <option value="google">Google</option>
+            <option value="openai">OpenAI</option>
+            <option value="perplexity">Perplexity</option>
+            <option value="xai">xAI</option>
+        </select>
+    </div>
+    <div>
+        <label for="tagFilter" class="form-label">Filter by Tag:</label>
+        <select id="tagFilter" class="form-select" style="width: 200px;">
+            <option value="">All Tags</option>
+            <% tags.forEach(tag => { %>
+                <option value="<%= tag.id %>" <%= selectedTag === tag.id ? 'selected' : '' %>>
+                    <%= tag.name %>
+                </option>
+            <% }); %>
+        </select>
+    </div>
 </div>
 
 <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
@@ -68,13 +81,14 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const providerFilter = document.getElementById('providerFilter');
+    const tagFilter = document.getElementById('tagFilter');
 
     // Set selected option based on URL parameter
     const urlParams = new URLSearchParams(window.location.search);
     const currentProvider = urlParams.get('provider') || 'all';
     providerFilter.value = currentProvider;
 
-    // Handle filter change
+    // Handle provider filter change
     providerFilter.addEventListener('change', function() {
         const selectedProvider = this.value;
         const url = new URL(window.location);
@@ -83,6 +97,20 @@ document.addEventListener('DOMContentLoaded', function() {
             url.searchParams.delete('provider');
         } else {
             url.searchParams.set('provider', selectedProvider);
+        }
+
+        window.location.href = url.toString();
+    });
+
+    // Handle tag filter change
+    tagFilter.addEventListener('change', function() {
+        const selectedTag = this.value;
+        const url = new URL(window.location);
+
+        if (selectedTag === '') {
+            url.searchParams.delete('tag');
+        } else {
+            url.searchParams.set('tag', selectedTag);
         }
 
         window.location.href = url.toString();

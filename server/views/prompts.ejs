@@ -8,6 +8,29 @@
     </div>
 </div>
 
+<div style="margin-bottom: 20px;">
+    <label for="tagFilter" style="margin-right: 10px;">Filter by tag:</label>
+    <select id="tagFilter" class="form-select" style="width: auto; display: inline-block;">
+        <option value="">All Prompts</option>
+        <% tags.forEach(tag => { %>
+            <option value="<%= tag.id %>" <%= selectedTag === tag.id ? 'selected' : '' %>>
+                <%= tag.name %>
+            </option>
+        <% }); %>
+    </select>
+</div>
+
+<script>
+    document.getElementById('tagFilter').addEventListener('change', function() {
+        const tagId = this.value;
+        if (tagId) {
+            window.location.href = '/prompts?tag=' + tagId;
+        } else {
+            window.location.href = '/prompts';
+        }
+    });
+</script>
+
 <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
     <thead>
         <tr style="background-color: #f2f2f2;">
