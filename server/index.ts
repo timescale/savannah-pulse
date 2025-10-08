@@ -569,7 +569,7 @@ app.post('/responses/:responseId/followup/:followupId', async (req, res) => {
   await updateResponseFollowUp(followupId, {
     followup: [
       ...followup.followup,
-      { role: 'user', content: [{ text: message }], type: 'message' },
+      { role: 'user', content: message, type: 'message' },
       newResponse.raw,
     ],
   });

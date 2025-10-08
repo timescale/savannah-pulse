@@ -18,7 +18,7 @@
                     <% if (message.type === 'web_search_call') { %>
                         Web search call: <%= message.action.query %>
                     <% } else if (message.type === 'message' || !message.type) { %>
-                        <%- markdown(message.content[0].text) %>
+                        <%- markdown(typeof message.content === 'string' ? message.content : message.content[0].text) %>
                     <% } %>
                 </div>
             </div>

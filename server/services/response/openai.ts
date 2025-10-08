@@ -69,13 +69,8 @@ export const parseFollowUp = (
 ) => {
   const output: any[] = [
     {
-      type: 'message',
       role: 'user',
-      content: [
-        {
-          text: prompt,
-        },
-      ],
+      content: prompt,
     },
     ...raw.output.filter((o) =>
       ['web_search_call', 'message'].includes(o.type),
@@ -83,7 +78,12 @@ export const parseFollowUp = (
   ];
   for (const result of followup) {
     if ('role' in result && result['role'] === 'user') {
-      output.push(result);
+      output.push({
+        ...result,
+        content: Array.isArray(result['content'])
+          ? result['content'][0].text
+          : result['content'],
+      });
       continue;
     }
     if (!isResponse(result)) {
@@ -114,7 +114,12 @@ export const getPriorMessages = (
     if (isResponse(item)) {
       messages.push(...item.output);
     } else {
-      messages.push(item);
+      messages.push({
+        ...item,
+        content: Array.isArray(item['content'])
+          ? item['content'][0].text
+          : item['content'],
+      });
     }
   }
   return messages;
