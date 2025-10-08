@@ -1,0 +1,60 @@
+<%- include('../partials/header', { title: 'Links for ' + hostname, currentPage: 'links' }) %>
+
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <h1>Links for <%= hostname %></h1>
+    <a href="/links" class="btn btn-secondary">Back to Links</a>
+</div>
+
+
+
+<div style="margin-bottom: 20px;">
+    <label for="viewFilter" style="margin-right: 10px;">View:</label>
+    <select id="viewFilter" class="form-select" style="width: auto; display: inline-block;">
+        <option value="all" <%= view === 'all' ? 'selected' : '' %>>Show All</option>
+        <option value="grouped" <%= view === 'grouped' ? 'selected' : '' %>>Group by URL</option>
+    </select>
+</div>
+
+<script>
+    document.getElementById('viewFilter').addEventListener('change', function() {
+        const viewMode = this.value;
+        window.location.href = '/links/<%= hostname %>?view=' + viewMode;
+    });
+</script>
+
+<table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+    <thead>
+        <tr style="background-color: #f2f2f2;">
+            <th style="border: 1px solid #ddd; padding: 12px; text-align: left;">URL</th>
+            <th style="border: 1px solid #ddd; padding: 12px; text-align: left;"><%= view === 'grouped' ? 'Count' : 'Response ID' %></th>
+        </tr>
+    </thead>
+    <tbody>
+        <% if (links && links.length > 0) { %>
+            <% links.forEach((link) => { %>
+                <tr>
+                    <td style="border: 1px solid #ddd; padding: 12px;">
+                        <a href="<%= link.url %>" target="_blank" style="color: #04AA6D; text-decoration: none;"><%= link.url %></a>
+                    </td>
+                    <td style="border: 1px solid #ddd; padding: 12px;">
+                        <% if (view === 'grouped') { %>
+                            <%= link.count %>
+                        <% } else { %>
+                            <a href="/responses/<%= link.response_id %>" style="color: #04AA6D; text-decoration: none;">
+                                <%= view === 'grouped' ? link.count : `#${link.response_id}` %>
+                            </a>
+                        <% } %>
+                    </td>
+                </tr>
+            <% }); %>
+        <% } else { %>
+            <tr>
+                <td colspan="3" style="border: 1px solid #ddd; padding: 12px; text-align: center; color: #666;">
+                    No links found for this hostname
+                </td>
+            </tr>
+        <% } %>
+    </tbody>
+</table>
+
+<%- include('../partials/footer') %>

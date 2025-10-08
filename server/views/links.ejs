@@ -46,7 +46,10 @@
         <% if (hostnameCounts && hostnameCounts.length > 0) { %>
             <% hostnameCounts.forEach(count => { %>
                 <tr>
-                    <td style="border: 1px solid #ddd; padding: 12px;"><%= count.hostname %></td>
+                    <td style="border: 1px solid #ddd; padding: 12px;">
+                        <a href="/links/<%= count.hostname %>">
+                            <%= count.hostname %>
+                        </a>
                     <td style="border: 1px solid #ddd; padding: 12px;"><%= count.count %></td>
                 </tr>
             <% }); %>

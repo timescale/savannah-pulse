@@ -35,6 +35,25 @@ export const getLinksByResponseId = async (responseId: number) => {
     .execute();
 };
 
+export const getLinksByHostname = async (hostname: string) => {
+  return await db
+    .selectFrom('links')
+    .selectAll()
+    .where('hostname', '=', hostname)
+    .orderBy('response_id', 'desc')
+    .execute();
+};
+
+export const getLinksByHostnameGrouped = async (hostname: string) => {
+  return await db
+    .selectFrom('links')
+    .select(['url', db.fn.count('id').as('count')])
+    .where('hostname', '=', hostname)
+    .groupBy('url')
+    .orderBy('count', 'desc')
+    .execute();
+};
+
 export const insertLink = async (
   link: NewLink,
   trx?: Transaction<Database>,

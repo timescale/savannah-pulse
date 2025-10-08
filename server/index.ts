@@ -16,6 +16,8 @@ import {
 } from './repositories/competitors-repository';
 import {
   getHostnameCount,
+  getLinksByHostname,
+  getLinksByHostnameGrouped,
   getLinksByResponseId,
   getRecentLinks,
   insertLink,
@@ -631,6 +633,18 @@ app.get('/links', async (_, res) => {
   const hostnameCounts = await getHostnameCount();
 
   res.render('links', { links, hostnameCounts });
+});
+
+app.get('/links/:hostname', async (req, res) => {
+  const hostname = req.params.hostname;
+  const view = (req.query['view'] as string) || 'all';
+
+  const links =
+    view === 'grouped'
+      ? await getLinksByHostnameGrouped(hostname)
+      : await getLinksByHostname(hostname);
+
+  res.render('links/hostname', { hostname, links, view });
 });
 
 app.get('/sentiments', async (_, res) => {
