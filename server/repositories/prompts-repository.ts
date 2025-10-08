@@ -58,3 +58,12 @@ export const getPromptsForTag = async (tagId: number) => {
 export const deletePrompt = async (id: number) => {
   return await db.deleteFrom('prompts').where('id', '=', id).execute();
 };
+
+export const getDuePrompts = async () => {
+  return await db
+    .selectFrom('prompts')
+    .selectAll()
+    .where('next_run_at', 'is not', null)
+    .where('next_run_at', '<=', new Date())
+    .execute();
+};

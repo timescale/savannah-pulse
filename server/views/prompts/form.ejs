@@ -40,6 +40,62 @@
     </div>
 
     <div style="margin-bottom: 20px;">
+        <label for="schedule" style="display: block; margin-bottom: 5px; font-weight: bold;">
+            Schedule (optional) - Times are in UTC:
+            <a href="https://crontab.guru/" target="_blank" style="margin-left: 10px; font-weight: normal; font-size: 14px;">Help with cron expressions</a>
+        </label>
+        <div id="timezone-info" style="margin-bottom: 10px; padding: 8px; background-color: #e3f2fd; border-radius: 4px; font-size: 14px; color: #1976d2;"></div>
+        <input
+            type="text"
+            id="schedule"
+            name="schedule"
+            value="<%= prompt?.schedule || '' %>"
+            style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 16px;"
+            placeholder="e.g., 0 9 * * 1-5 (9am weekdays)"
+        />
+        <div id="schedule-description" style="margin-top: 10px; padding: 10px; background-color: #f5f5f5; border-radius: 4px; min-height: 24px; font-size: 14px; color: #333;"></div>
+    </div>
+
+    <script>
+        function displayTimezoneInfo() {
+            const timezoneInfoDiv = document.getElementById('timezone-info');
+            const offset = -new Date().getTimezoneOffset();
+            const offsetHours = Math.floor(Math.abs(offset) / 60);
+            const offsetMinutes = Math.abs(offset) % 60;
+            const offsetSign = offset >= 0 ? '+' : '-';
+            const offsetString = `UTC${offsetSign}${String(offsetHours).padStart(2, '0')}:${String(offsetMinutes).padStart(2, '0')}`;
+
+            const timezoneName = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            timezoneInfoDiv.textContent = `Your timezone: ${timezoneName} (${offsetString})`;
+        }
+
+        function updateScheduleDescription() {
+            const scheduleInput = document.getElementById('schedule');
+            const descriptionDiv = document.getElementById('schedule-description');
+            const value = scheduleInput.value.trim();
+
+            if (value) {
+                try {
+                    const description = window.cronstrue.toString(value);
+                    descriptionDiv.textContent = description;
+                    descriptionDiv.style.color = '#333';
+                } catch (error) {
+                    descriptionDiv.textContent = 'Invalid cron expression';
+                    descriptionDiv.style.color = '#d9534f';
+                }
+            } else {
+                descriptionDiv.textContent = '';
+            }
+        }
+
+        document.getElementById('schedule').addEventListener('input', updateScheduleDescription);
+        document.addEventListener('DOMContentLoaded', () => {
+            displayTimezoneInfo();
+            updateScheduleDescription();
+        });
+    </script>
+
+    <div style="margin-bottom: 20px;">
         <button  type="submit" class="btn btn-primary"><%= prompt ? 'Edit' : 'Add' %> Prompt</button>
         <a href="/prompts" class="btn btn-danger" style="margin-left: 10px;">Cancel</a>
     </div>

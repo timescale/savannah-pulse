@@ -39,6 +39,8 @@
     "@google/genai": "^1.14.0",
     "bootstrap": "^5.3.3",
     "bootstrap-icons": "^1.13.1",
+    "cron-parser": "^5.4.0",
+    "cronstrue": "^3.3.0",
     "dotenv": "^17.2.0",
     "express": "^5.1.0",
     "kysely": "^0.28.3",

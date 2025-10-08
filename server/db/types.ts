@@ -10,6 +10,8 @@ export interface PromptTable {
   id: Generated<number>;
   prompt: string;
   models: string[];
+  schedule: string | null;
+  next_run_at: ColumnType<Date | null, Date | null, Date | null>;
   created_at: ColumnType<Date, never, never>;
   updated_at: ColumnType<Date, never, Date>;
 }

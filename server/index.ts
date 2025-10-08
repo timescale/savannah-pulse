@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import { CronExpressionParser } from 'cron-parser';
 import express from 'express';
 import { marked } from 'marked';
 import path from 'node:path';
@@ -24,6 +25,7 @@ import {
 } from './repositories/links-repository';
 import {
   deletePrompt,
+  getDuePrompts,
   getPromptById,
   getPrompts,
   getPromptsForTag,
@@ -103,6 +105,10 @@ app.use(
   express.static(
     path.join(__dirname, '..', 'node_modules/bootstrap-icons/font'),
   ),
+);
+app.use(
+  '/cronstrue',
+  express.static(path.join(__dirname, '..', 'node_modules/cronstrue/dist')),
 );
 
 // Serve static files from public directory
@@ -216,7 +222,7 @@ app.get('/prompts/add', async (_, res) => {
 });
 
 app.post('/prompts/add', async (req, res) => {
-  const { models, prompt, prompts, tags } = req.body;
+  const { models, prompt, prompts, schedule, tags } = req.body;
 
   if (
     !models &&
@@ -244,13 +250,38 @@ app.post('/prompts/add', async (req, res) => {
     res.status(400).send('Prompt is required');
     return;
   }
+
+  // Validate and calculate schedule
+  let scheduleValue: string | null = null;
+  let nextRunAt: Date | null = null;
+
+  if (schedule && schedule.trim().length > 0) {
+    const trimmedSchedule = schedule.trim();
+    try {
+      nextRunAt = CronExpressionParser.parse(trimmedSchedule).next().toDate();
+      scheduleValue = trimmedSchedule;
+    } catch (error) {
+      res
+        .status(400)
+        .send(
+          `Invalid cron expression: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        );
+      return;
+    }
+  }
+
   const promptArray = prompts
     ? Array.isArray(prompts)
       ? prompts
       : [prompts]
     : [prompt];
   for (const p of promptArray) {
-    const { id } = await insertPrompt({ models: modelArray, prompt: p });
+    const { id } = await insertPrompt({
+      models: modelArray,
+      prompt: p,
+      schedule: scheduleValue,
+      next_run_at: nextRunAt,
+    });
     if (tags && Array.isArray(tags)) {
       for (const tagIdStr of tags) {
         const tagId = parseInt(tagIdStr, 10);
@@ -320,7 +351,7 @@ app.post('/prompts/:id/edit', async (req, res) => {
     return;
   }
 
-  const { models, tags } = req.body;
+  const { models, schedule, tags } = req.body;
   if (!models || !Array.isArray(models) || models.length === 0) {
     res.status(400).send('At least one model is required');
     return;
@@ -332,9 +363,30 @@ app.post('/prompts/:id/edit', async (req, res) => {
     }
   }
 
-  console.log(tags);
+  // Validate and calculate schedule
+  let scheduleValue: string | null = null;
+  let nextRunAt: Date | null = null;
 
-  await updatePrompt(promptId, { models });
+  if (schedule && schedule.trim().length > 0) {
+    const trimmedSchedule = schedule.trim();
+    try {
+      nextRunAt = CronExpressionParser.parse(trimmedSchedule).next().toDate();
+      scheduleValue = trimmedSchedule;
+    } catch (error) {
+      res
+        .status(400)
+        .send(
+          `Invalid cron expression: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        );
+      return;
+    }
+  }
+
+  await updatePrompt(promptId, {
+    models,
+    schedule: scheduleValue,
+    next_run_at: nextRunAt,
+  });
 
   const promptTags = await getTagsForPrompt(promptId);
   const promptTagIds = promptTags.map((t) => t.id);
@@ -651,6 +703,115 @@ app.get('/sentiments', async (_, res) => {
   const sentiments = await getBrandSentiment();
   res.render('sentiments', { sentiments });
 });
+
+// Scheduled prompt runner - checks every 5 minutes for prompts that need to run
+async function runScheduledPrompts() {
+  try {
+    const duePrompts = await getDuePrompts();
+    if (duePrompts.length === 0) {
+      return;
+    }
+
+    console.log(
+      `Running ${duePrompts.length} scheduled prompt(s) at ${new Date().toISOString()}`,
+    );
+
+    for (const prompt of duePrompts) {
+      try {
+        console.log(`Running scheduled prompt ${prompt.id}: ${prompt.prompt}`);
+
+        await db.transaction().execute(async (trx) => {
+          const promises = prompt.models.map(async (model) => {
+            const response = await getResponse(prompt.prompt, model);
+            const brandSentiment = await generateBrandSentiment(
+              [
+                ...(await getCompetitors()).map((c) => c.name),
+                'Timescale',
+                'TigerData',
+              ],
+              response.content,
+            );
+            const newResponse = await insertResponse(
+              {
+                prompt_id: prompt.id,
+                model,
+                raw: response.raw,
+                response: response.content,
+              },
+              trx,
+            );
+            if (!newResponse) {
+              throw new Error('Could not insert response');
+            }
+            const id = newResponse.id;
+            for (const url of response.urls) {
+              await insertLink(
+                {
+                  response_id: id,
+                  url,
+                  hostname: new URL(url).hostname.replace(/^www\./, ''),
+                },
+                trx,
+              );
+            }
+            for (const searchQuery of response.searchQueries) {
+              await insertSearchQuery(
+                { query: searchQuery, response_id: id },
+                trx,
+              );
+            }
+            for (const sentiment of brandSentiment.sentiments) {
+              await insertBrandSentiment(
+                {
+                  ...sentiment,
+                  response_id: id,
+                },
+                trx,
+              );
+            }
+
+            return id;
+          });
+
+          await Promise.all(promises);
+        });
+
+        // Calculate next run time
+        if (prompt.schedule) {
+          const nextRunAt = CronExpressionParser.parse(prompt.schedule)
+            .next()
+            .toDate();
+          await updatePrompt(prompt.id, { next_run_at: nextRunAt });
+          console.log(
+            `Prompt ${prompt.id} completed. Next run at ${nextRunAt.toISOString()}`,
+          );
+        }
+      } catch (error) {
+        console.error(`Error running scheduled prompt ${prompt.id}:`, error);
+      }
+    }
+  } catch (error) {
+    console.error('Error in runScheduledPrompts:', error);
+  }
+}
+
+// Calculate delay to next 5-minute boundary
+const now = new Date();
+const minutes = now.getMinutes();
+const seconds = now.getSeconds();
+const milliseconds = now.getMilliseconds();
+const delayMs = (5 - (minutes % 5)) * 60 * 1000 - seconds * 1000 - milliseconds;
+
+console.log(
+  `Scheduling first run in ${Math.round(delayMs / 1000)} seconds (at ${new Date(Date.now() + delayMs).toLocaleTimeString()})`,
+);
+
+// Run once on startup, then at the next 5-minute boundary, then every 5 minutes
+runScheduledPrompts();
+setTimeout(() => {
+  runScheduledPrompts();
+  setInterval(runScheduledPrompts, 300000);
+}, delayMs);
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
