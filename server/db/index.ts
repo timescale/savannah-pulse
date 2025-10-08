@@ -35,7 +35,7 @@ export const db = new Kysely<Database>({
   log: process.env['DEBUG'] ? ['error', 'query'] : ['error'],
 });
 
-async function migrateToLatest() {
+export async function migrateToLatest() {
   const db = new Kysely<Database>({
     dialect: new PostgresDialect({
       pool: new Pool(poolConfig),
@@ -71,5 +71,3 @@ async function migrateToLatest() {
 
   await db.destroy();
 }
-
-migrateToLatest();

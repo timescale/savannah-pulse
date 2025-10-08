@@ -5,7 +5,7 @@ import { marked } from 'marked';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { db } from './db';
+import { db, migrateToLatest } from './db';
 import {
   getBrandSentiment,
   getBrandSentimentByResponseId,
@@ -806,13 +806,21 @@ console.log(
   `Scheduling first run in ${Math.round(delayMs / 1000)} seconds (at ${new Date(Date.now() + delayMs).toLocaleTimeString()})`,
 );
 
-// Run once on startup, then at the next 5-minute boundary, then every 5 minutes
-runScheduledPrompts();
-setTimeout(() => {
-  runScheduledPrompts();
-  setInterval(runScheduledPrompts, 300000);
-}, delayMs);
-
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
-});
+migrateToLatest()
+  .catch((err) => {
+    console.error('Error running migrations:', err);
+    process.exit(1);
+  })
+  .then(() => {
+    // Run once on startup, then at the next 5-minute boundary, then every 5 minutes
+    runScheduledPrompts();
+    setTimeout(() => {
+      runScheduledPrompts();
+      setInterval(runScheduledPrompts, 300000);
+    }, delayMs);
+  })
+  .then(() => {
+    app.listen(port, () => {
+      console.log(`Server is running on port ${port}`);
+    });
+  });
