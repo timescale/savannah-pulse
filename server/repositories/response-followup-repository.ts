@@ -45,3 +45,10 @@ export const updateResponseFollowUp = async (
     .where('id', '=', id)
     .execute();
 };
+
+export const deleteResponseFollowUp = async (id: number) => {
+  return await db
+    .deleteFrom('response_followups')
+    .where('id', '=', id)
+    .execute();
+};

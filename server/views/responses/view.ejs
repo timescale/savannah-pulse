@@ -43,14 +43,14 @@
             </tr>
         </thead>
         <tbody>
-            <% followups.forEach(({ id, followup_count, created_at }) => { %>
+            <% followups.forEach((followup) => { %>
                 <tr style="border-bottom: 1px solid #ddd;">
-                    <td style="padding: 12px; border: 1px solid #ddd;"><%= id %></td>
-                    <td style="padding: 12px; border: 1px solid #ddd;"><%= followup_count %></td>
-                    <td style="padding: 12px; border: 1px solid #ddd;"><%= new Date(created_at).toLocaleString() %></td>
+                    <td style="padding: 12px; border: 1px solid #ddd;"><%= followup.id %></td>
+                    <td style="padding: 12px; border: 1px solid #ddd;"><%= followup.followup_count %></td>
+                    <td style="padding: 12px; border: 1px solid #ddd;"><%= new Date(followup.created_at).toLocaleString() %></td>
                     <td style="padding: 12px; border: 1px solid #ddd;">
-                        <a class="btn btn-secondary" style="margin-right: 5px;">View</a>
-                        <a class="btn btn-danger">Delete</a>
+                        <a href="/responses/<%= response.id %>/followup/<%= followup.id %>" class="btn btn-secondary" style="margin-right: 5px;">View</a>
+                        <a href="/responses/<%= response.id %>/followup/<%= followup.id %>/delete" class="btn btn-danger">Delete</a>
                     </td>
                 </tr>
             <% }); %>

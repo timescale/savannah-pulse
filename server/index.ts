@@ -33,6 +33,7 @@ import {
   insertPromptTag,
 } from './repositories/prompts-tags-repository';
 import {
+  deleteResponseFollowUp,
   getResponseFollowUpById,
   getResponseFollowUpsByResponseId,
   insertResponseFollowUp,
@@ -574,6 +575,33 @@ app.post('/responses/:responseId/followup/:followupId', async (req, res) => {
   });
 
   res.redirect(`/responses/${responseId}/followup/${followupId}`);
+});
+
+app.get('/responses/:id/followup/:followupId/delete', async (req, res) => {
+  const responseId = parseInt(req.params.id, 10);
+  if (isNaN(responseId)) {
+    res.status(400).send('Invalid response ID');
+    return;
+  }
+  const response = await getResponseById(responseId);
+  if (!response) {
+    res.status(404).send('Response not found');
+    return;
+  }
+
+  const followupId = parseInt(req.params.followupId, 10);
+  if (isNaN(followupId)) {
+    res.status(400).send('Invalid followup ID');
+    return;
+  }
+  const followup = await getResponseFollowUpById(followupId);
+  if (!followup) {
+    res.status(404).send('Followup not found');
+    return;
+  }
+
+  await deleteResponseFollowUp(followupId);
+  res.redirect(`/responses/${responseId}`);
 });
 
 app.get('/links', async (_, res) => {
