@@ -1,0 +1,255 @@
+<%- include('partials/header', { title: 'Trends', currentPage: 'trends' }) %>
+
+<h1>Trends</h1>
+
+<h2>Weekly Link Counts (Top 5 Hostnames from Most Recent Week)</h2>
+
+<div style="margin-bottom: 40px;">
+    <canvas id="linksChart" style="max-height: 200px;"></canvas>
+</div>
+<%
+// Pivot the data: organize by hostname and week
+const linksByHostname = {};
+const allWeeks = new Set();
+
+weeklyLinkCounts.forEach(item => {
+    if (!linksByHostname[item.hostname]) {
+        linksByHostname[item.hostname] = {};
+    }
+    const weekKey = new Date(item.week).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    linksByHostname[item.hostname][weekKey] = item.count;
+    allWeeks.add(weekKey);
+});
+
+// Sort weeks in ascending order (oldest first, left to right)
+const sortedWeeks = Array.from(allWeeks).sort((a, b) => {
+    return new Date(a) - new Date(b);
+});
+
+const hostnames = Object.keys(linksByHostname);
+%>
+
+<% if (hostnames.length > 0) { %>
+<table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+    <thead>
+        <tr style="background-color: #f2f2f2;">
+            <th style="border: 1px solid #ddd; padding: 12px; text-align: left;">Hostname</th>
+            <% sortedWeeks.forEach(week => { %>
+                <th style="border: 1px solid #ddd; padding: 12px; text-align: right;"><%= week %></th>
+            <% }); %>
+        </tr>
+    </thead>
+    <tbody>
+        <% hostnames.forEach(hostname => { %>
+            <tr>
+                <td style="border: 1px solid #ddd; padding: 12px;">
+                    <a href="/links/<%= hostname %>">
+                        <%= hostname %>
+                    </a>
+                </td>
+                <% sortedWeeks.forEach(week => { %>
+                    <td style="border: 1px solid #ddd; padding: 12px; text-align: right;">
+                        <%= linksByHostname[hostname][week] || '-' %>
+                    </td>
+                <% }); %>
+            </tr>
+        <% }); %>
+    </tbody>
+</table>
+<% } else { %>
+<p style="color: #666; text-align: center; margin-top: 20px;">No link data found</p>
+<% } %>
+
+<h2 style="margin-top: 40px;">Weekly Brand Sentiment Counts (Top 5 Brands from Most Recent Week)</h2>
+
+<div style="margin-bottom: 40px;">
+    <canvas id="sentimentsChart" style="max-height: 200px;"></canvas>
+</div>
+<%
+// Pivot the data: organize by brand and week
+const sentimentsByBrand = {};
+const allSentimentWeeks = new Set();
+
+weeklyBrandSentimentCounts.forEach(item => {
+    if (!sentimentsByBrand[item.brand]) {
+        sentimentsByBrand[item.brand] = {};
+    }
+    const weekKey = new Date(item.week).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    sentimentsByBrand[item.brand][weekKey] = item.count;
+    allSentimentWeeks.add(weekKey);
+});
+
+// Sort weeks in ascending order (oldest first, left to right)
+const sortedSentimentWeeks = Array.from(allSentimentWeeks).sort((a, b) => {
+    return new Date(a) - new Date(b);
+});
+
+const brands = Object.keys(sentimentsByBrand);
+%>
+
+<% if (brands.length > 0) { %>
+<table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+    <thead>
+        <tr style="background-color: #f2f2f2;">
+            <th style="border: 1px solid #ddd; padding: 12px; text-align: left;">Brand</th>
+            <% sortedSentimentWeeks.forEach(week => { %>
+                <th style="border: 1px solid #ddd; padding: 12px; text-align: right;"><%= week %></th>
+            <% }); %>
+        </tr>
+    </thead>
+    <tbody>
+        <% brands.forEach(brand => { %>
+            <tr>
+                <td style="border: 1px solid #ddd; padding: 12px;">
+                    <%= brand %>
+                </td>
+                <% sortedSentimentWeeks.forEach(week => { %>
+                    <td style="border: 1px solid #ddd; padding: 12px; text-align: right;">
+                        <%= sentimentsByBrand[brand][week] || '-' %>
+                    </td>
+                <% }); %>
+            </tr>
+        <% }); %>
+    </tbody>
+</table>
+<% } else { %>
+<p style="color: #666; text-align: center; margin-top: 20px;">No brand sentiment data found</p>
+<% } %>
+
+<script>
+// Generate colors for chart lines
+function generateColors(count) {
+    const colors = [
+        'rgb(255, 99, 132)',   // red
+        'rgb(54, 162, 235)',   // blue
+        'rgb(255, 206, 86)',   // yellow
+        'rgb(75, 192, 192)',   // teal
+        'rgb(153, 102, 255)',  // purple
+        'rgb(255, 159, 64)',   // orange
+    ];
+    return colors.slice(0, count);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    if (document.getElementById('linksChart')) {
+        const linksData = <%- JSON.stringify(weeklyLinkCounts) %>;
+
+        // Organize data by hostname
+        const linksByHost = {};
+        const allWeeksSet = new Set();
+
+        linksData.forEach(item => {
+            if (!linksByHost[item.hostname]) {
+                linksByHost[item.hostname] = {};
+            }
+            const weekStr = new Date(item.week).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+            linksByHost[item.hostname][weekStr] = parseInt(item.count);
+            allWeeksSet.add(weekStr);
+        });
+
+        const weeksArray = Array.from(allWeeksSet).sort((a, b) => new Date(a) - new Date(b));
+        const hostnames = Object.keys(linksByHost);
+        const colors = generateColors(hostnames.length);
+
+        const datasets = hostnames.map((hostname, index) => {
+            return {
+                label: hostname,
+                data: weeksArray.map(week => linksByHost[hostname][week] || 0),
+                borderColor: colors[index],
+                backgroundColor: colors[index].replace('rgb', 'rgba').replace(')', ', 0.1)'),
+                tension: 0.1
+            };
+        });
+
+        new Chart(document.getElementById('linksChart'), {
+            type: 'line',
+            data: {
+                labels: weeksArray,
+                datasets: datasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Brand Sentiments Chart
+    if (document.getElementById('sentimentsChart')) {
+        const sentimentsData = <%- JSON.stringify(weeklyBrandSentimentCounts) %>;
+
+        // Organize data by brand
+        const sentimentsByBrandObj = {};
+        const allSentimentWeeksSet = new Set();
+
+        sentimentsData.forEach(item => {
+            if (!sentimentsByBrandObj[item.brand]) {
+                sentimentsByBrandObj[item.brand] = {};
+            }
+            const weekStr = new Date(item.week).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+            sentimentsByBrandObj[item.brand][weekStr] = parseInt(item.count);
+            allSentimentWeeksSet.add(weekStr);
+        });
+
+        const sentimentWeeksArray = Array.from(allSentimentWeeksSet).sort((a, b) => new Date(a) - new Date(b));
+        const brands = Object.keys(sentimentsByBrandObj);
+        const sentimentColors = generateColors(brands.length);
+
+        const sentimentDatasets = brands.map((brand, index) => {
+            return {
+                label: brand,
+                data: sentimentWeeksArray.map(week => sentimentsByBrandObj[brand][week] || 0),
+                borderColor: sentimentColors[index],
+                backgroundColor: sentimentColors[index].replace('rgb', 'rgba').replace(')', ', 0.1)'),
+                tension: 0.1
+            };
+        });
+
+        new Chart(document.getElementById('sentimentsChart'), {
+            type: 'line',
+            data: {
+                labels: sentimentWeeksArray,
+                datasets: sentimentDatasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
+
+<%- include('partials/footer') %>

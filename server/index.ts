@@ -63,6 +63,10 @@ import {
   insertTag,
   updateTag,
 } from './repositories/tags-repository';
+import {
+  getWeeklyBrandSentimentCounts,
+  getWeeklyLinkCounts,
+} from './repositories/trends-repository';
 import { generateBrandSentiment } from './services/brand-sentiment';
 import { generatePrompts } from './services/prompt-generator';
 import {
@@ -109,6 +113,10 @@ app.use(
 app.use(
   '/cronstrue',
   express.static(path.join(__dirname, '..', 'node_modules/cronstrue/dist')),
+);
+app.use(
+  '/chartjs',
+  express.static(path.join(__dirname, '..', 'node_modules/chart.js/dist')),
 );
 
 // Serve static files from public directory
@@ -699,6 +707,12 @@ app.get('/links/:hostname', async (req, res) => {
 app.get('/sentiments', async (_, res) => {
   const sentiments = await getBrandSentiment();
   res.render('sentiments', { sentiments });
+});
+
+app.get('/trends', async (_, res) => {
+  const weeklyLinkCounts = await getWeeklyLinkCounts();
+  const weeklyBrandSentimentCounts = await getWeeklyBrandSentimentCounts();
+  res.render('trends', { weeklyLinkCounts, weeklyBrandSentimentCounts });
 });
 
 // Scheduled prompt runner - checks every 5 minutes for prompts that need to run
